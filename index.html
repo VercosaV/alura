@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VideoGet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #111118;
+      --border:    #1e1e2e;
+      --accent:    #6af2a8;
+      --accent2:   #f2a86a;
+      --muted:     #44445a;
+      --text:      #e8e8f0;
+      --text-dim:  #888899;
+      --danger:    #f26a6a;
+      --radius:    12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 16px 80px;
+    }
+
+    /* Animated background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(106,242,168,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(106,242,168,.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper { position: relative; z-index: 1; width: 100%; max-width: 680px; }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.4rem, 8vw, 4rem);
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, var(--accent) 0%, #a0f26a 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+    .tagline {
+      margin-top: 8px;
+      color: var(--text-dim);
+      font-size: 0.8rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    /* ── URL Row ── */
+    .url-row {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+    .url-row input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      padding: 12px 16px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .url-row input:focus { border-color: var(--accent); }
+    .url-row input::placeholder { color: var(--muted); }
+
+    .btn {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: var(--radius);
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-accent {
+      background: var(--accent);
+      color: #0a0a0f;
+    }
+    .btn-accent:hover { background: #7ffcb5; transform: translateY(-1px); }
+    .btn-accent:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    /* ── Options row ── */
+    .options-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    .quality-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .quality-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .quality-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(106,242,168,.08); }
+
+    /* ── Cookies toggle ── */
+    .cookies-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+      cursor: pointer;
+      color: var(--text-dim);
+      font-size: 0.78rem;
+      width: fit-content;
+      user-select: none;
+    }
+    .cookies-toggle:hover { color: var(--accent2); }
+    .cookies-toggle span { font-size: 1rem; }
+
+    #cookies-area {
+      display: none;
+      margin-top: 12px;
+    }
+    #cookies-area textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      padding: 10px 14px;
+      resize: vertical;
+      min-height: 90px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    #cookies-area textarea:focus { border-color: var(--accent2); }
+    #cookies-area p {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-top: 6px;
+    }
+
+    /* ── Preview ── */
+    #preview {
+      display: none;
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+    .preview-inner {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .preview-thumb {
+      width: 110px;
+      height: 62px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .preview-meta { flex: 1; }
+    .preview-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+    .preview-sub {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+    }
+    .preview-tag {
+      display: inline-block;
+      background: rgba(106,242,168,.1);
+      color: var(--accent);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.65rem;
+      margin-top: 6px;
+    }
+
+    /* ── Progress ── */
+    #progress-wrap { display: none; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border); }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    .progress-bar-track {
+      background: var(--border);
+      border-radius: 999px;
+      height: 6px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), #a0f26a);
+      width: 0%;
+      transition: width .4s ease;
+    }
+    .progress-stats {
+      display: flex;
+      gap: 16px;
+      margin-top: 8px;
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+
+    /* ── Status messages ── */
+    .status-msg {
+      margin-top: 14px;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+      display: none;
+    }
+    .status-done { background: rgba(106,242,168,.1); border: 1px solid rgba(106,242,168,.3); color: var(--accent); }
+    .status-error { background: rgba(242,106,106,.1); border: 1px solid rgba(242,106,106,.3); color: var(--danger); }
+
+    /* ── Downloads list ── */
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 14px;
+    }
+    #files-list { display: flex; flex-direction: column; gap: 10px; }
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: border-color .2s;
+    }
+    .file-item:hover { border-color: var(--muted); }
+    .file-name {
+      font-size: 0.78rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 380px;
+    }
+    .file-size { font-size: 0.68rem; color: var(--text-dim); margin-top: 3px; }
+    .dl-btn {
+      font-size: 0.72rem;
+      padding: 6px 12px;
+      background: rgba(106,242,168,.1);
+      border: 1px solid rgba(106,242,168,.25);
+      color: var(--accent);
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background .15s;
+    }
+    .dl-btn:hover { background: rgba(106,242,168,.2); }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    /* ── Pulse anim for loading ── */
+    /* Diagnose panel */
+    #diag-panel {
+      display: none;
+      margin-top: 14px;
+      padding: 14px;
+      background: #0d0d14;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.68rem;
+      color: var(--text-dim);
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    #diag-panel .diag-title {
+      font-family: 'Syne', sans-serif;
+      color: var(--accent2);
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    #diag-panel .diag-row { margin: 3px 0; }
+    #diag-panel .diag-key { color: var(--accent); }
+    #diag-panel .fmt-list { margin-top: 8px; }
+    #diag-panel .fmt-item {
+      display: flex; gap: 8px; padding: 3px 0;
+      border-bottom: 1px solid #1a1a28;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: .5; }
+      50%       { opacity: 1; }
+    }
+    .pulsing { animation: pulse 1.4s ease-in-out infinite; }
+  </style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <header>
+    <div class="logo">VideoGet</div>
+    <div class="tagline">YouTube · Alura · Qualquer URL</div>
+  </header>
+
+  <!-- Alura tip -->
+  <div class="card" id="alura-tip" style="border-color:rgba(242,168,106,.25);background:rgba(242,168,106,.04);margin-bottom:20px;padding:18px 22px;">
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.8rem;color:var(--accent2);margin-bottom:10px;">💡 Como baixar da Alura (URL direta)</div>
+    <div style="font-size:0.75rem;color:var(--text-dim);line-height:1.7;">
+      <b style="color:var(--text)">Método mais confiável:</b> extraia a URL direta do <code>.mp4</code> no DevTools:<br>
+      1. Abra a aula na Alura e deixe o vídeo carregar<br>
+      2. Aperte <kbd style="background:#1a1a2e;padding:1px 6px;border-radius:4px;border:1px solid #333">F12</kbd> → aba <b>Network</b> → filtre por <code>mp4</code> ou <code>media</code><br>
+      3. Clique na entrada do vídeo → copie a <b>Request URL</b><br>
+      4. Cole aqui e clique em <b>Baixar</b> — sem precisar de cookies!<br>
+      <span style="color:var(--danger);font-size:0.7rem;">⚠️ O token expira em ~10 min. Copie e cole imediatamente.</span>
+    </div>
+    <button onclick="document.getElementById('alura-tip').style.display='none'" style="float:right;margin-top:-60px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;">✕</button>
+  </div>
+
+  <!-- Main card -->
+  <div class="card">
+    <div class="url-row">
+      <input id="url-input" type="url" placeholder="Cole a URL do vídeo aqui…" />
+      <button class="btn btn-ghost" id="btn-info">Info</button>
+      <button class="btn btn-ghost" id="btn-diagnose" title="Diagnóstico para Alura">🔍</button>
+      <button class="btn btn-accent" id="btn-download">Baixar</button>
+    </div>
+
+    <!-- Quality selector -->
+    <div class="options-row">
+      <span style="font-size:.72rem;color:var(--text-dim);align-self:center;">Qualidade:</span>
+      <button class="quality-btn active" data-q="best">Melhor</button>
+      <button class="quality-btn" data-q="1080">1080p</button>
+      <button class="quality-btn" data-q="720">720p</button>
+      <button class="quality-btn" data-q="480">480p</button>
+      <button class="quality-btn" data-q="audio">Só áudio</button>
+    </div>
+
+    <!-- Cookies toggle (needed for Alura / sites com login) -->
+    <div class="cookies-toggle" id="cookies-toggle">
+      <span>🍪</span> Usar cookies (Alura, sites com login)
+    </div>
+    <div id="cookies-area">
+      <textarea id="cookies-input" placeholder="Cole aqui o conteúdo do arquivo cookies.txt (formato Netscape)…"></textarea>
+      <p>💡 <strong>Como exportar da Alura:</strong> Instale a extensão <em>"Get cookies.txt LOCALLY"</em> no Chrome → faça login na Alura → clique na extensão → Export → cole o conteúdo aqui.</p>
+      <p style="margin-top:6px">⚠️ O cookie <code>caelum.login.token</code> e <code>SESSION</code> são obrigatórios. Se expirar, exporte novamente.</p>
+    </div>
+
+    <!-- Preview -->
+    <div id="preview">
+      <div class="preview-inner">
+        <img id="prev-thumb" class="preview-thumb" src="" alt="" />
+        <div class="preview-meta">
+          <div class="preview-title" id="prev-title"></div>
+          <div class="preview-sub" id="prev-uploader"></div>
+          <div class="preview-tag" id="prev-duration"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div id="progress-wrap">
+      <div class="progress-label">
+        <span id="prog-status">Iniciando…</span>
+        <span id="prog-percent">0%</span>
+      </div>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="prog-bar"></div>
+      </div>
+      <div class="progress-stats">
+        <span id="prog-speed"></span>
+        <span id="prog-eta"></span>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="status-msg status-done" id="msg-done"></div>
+    <div class="status-msg status-error" id="msg-error"></div>
+    <div id="diag-panel"></div>
+  </div>
+
+  <!-- Downloaded files -->
+  <div class="card">
+    <div class="section-title">Arquivos baixados</div>
+    <div id="files-list"><div class="empty-state">Nenhum arquivo ainda.</div></div>
+  </div>
+
+</div>
+
+<script>
+  let selectedQuality = 'best';
+  let pollInterval = null;
+
+  // Quality buttons
+  document.querySelectorAll('.quality-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedQuality = btn.dataset.q;
+    });
+  });
+
+  // Cookies toggle
+  document.getElementById('cookies-toggle').addEventListener('click', () => {
+    const area = document.getElementById('cookies-area');
+    area.style.display = area.style.display === 'block' ? 'none' : 'block';
+  });
+
+  // Info button
+  document.getElementById('btn-info').addEventListener('click', async () => {
+    const url = document.getElementById('url-input').value.trim();
+    if (!url) return;
+    const cookies = document.getElementById('cookies-input').value.trim();
+
+    document.getElementById('btn-info').textContent = '…';
+    hideMessages();
+
+    try {
+      const res = await fetch('/api/info', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({url, cookies})
+      });
+      const data = await res.json();
+      if (data.error) { showError(data.error); return; }
+      showPreview(data);
+    } catch(e) {
+      showError('Erro ao buscar informações.');
+    } finally {
+      document.getElementById('btn-info').textContent = 'Info';
+    }
+  });
+
+  // Download button
+  document.getElementById('btn-download').addEventListener('click', async () => {
+    const url = document.getElementById('url-input').value.trim();
+    if (!url) return;
+    const cookies = document.getElementById('cookies-input').value.trim();
+
+    hideMessages();
+    document.getElementById('btn-download').disabled = true;
+    showProgress(true);
+
+    try {
+      const res = await fetch('/api/download', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({url, quality: selectedQuality, cookies})
+      });
+      const data = await res.json();
+      if (data.error) { showError(data.error); showProgress(false); return; }
+      pollProgress(data.download_id);
+    } catch(e) {
+      showError('Erro ao iniciar download.');
+      showProgress(false);
+      document.getElementById('btn-download').disabled = false;
+    }
+  });
+
+  function pollProgress(id) {
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(async () => {
+      const res = await fetch(`/api/progress/${id}`);
+      const d = await res.json();
+
+      document.getElementById('prog-percent').textContent = d.percent + '%';
+      document.getElementById('prog-bar').style.width = d.percent + '%';
+
+      if (d.status === 'downloading') {
+        document.getElementById('prog-status').textContent = 'Baixando…';
+        document.getElementById('prog-speed').textContent = d.speed || '';
+        document.getElementById('prog-eta').textContent = d.eta ? `ETA: ${d.eta}` : '';
+      } else if (d.status === 'processing') {
+        document.getElementById('prog-status').textContent = 'Processando…';
+      } else if (d.status === 'starting') {
+        document.getElementById('prog-status').textContent = 'Iniciando…';
+      } else if (d.status === 'done') {
+        clearInterval(pollInterval);
+        showProgress(false);
+        document.getElementById('btn-download').disabled = false;
+        document.getElementById('msg-done').textContent = `✅  Concluído: ${d.title || d.filename}`;
+        document.getElementById('msg-done').style.display = 'block';
+        loadFiles();
+      } else if (d.status === 'error') {
+        clearInterval(pollInterval);
+        showProgress(false);
+        document.getElementById('btn-download').disabled = false;
+        showError('Erro: ' + d.error);
+      }
+    }, 700);
+  }
+
+  function showPreview(data) {
+    document.getElementById('prev-thumb').src = data.thumbnail || '';
+    document.getElementById('prev-thumb').style.display = data.thumbnail ? 'block' : 'none';
+    document.getElementById('prev-title').textContent = data.title || '—';
+    document.getElementById('prev-uploader').textContent = data.uploader || '';
+    document.getElementById('prev-duration').textContent = data.duration || '';
+    document.getElementById('preview').style.display = 'block';
+  }
+
+  function showProgress(show) {
+    document.getElementById('progress-wrap').style.display = show ? 'block' : 'none';
+    if (show) {
+      document.getElementById('prog-bar').style.width = '0%';
+      document.getElementById('prog-percent').textContent = '0%';
+      document.getElementById('prog-status').textContent = 'Iniciando…';
+      document.getElementById('prog-speed').textContent = '';
+      document.getElementById('prog-eta').textContent = '';
+    }
+  }
+
+  function showError(msg) {
+    document.getElementById('msg-error').textContent = '❌  ' + msg;
+    document.getElementById('msg-error').style.display = 'block';
+  }
+
+  function hideMessages() {
+    document.getElementById('msg-done').style.display = 'none';
+    document.getElementById('msg-error').style.display = 'none';
+  }
+
+  async function loadFiles() {
+    const res = await fetch('/api/list');
+    const files = await res.json();
+    const list = document.getElementById('files-list');
+    if (!files.length) {
+      list.innerHTML = '<div class="empty-state">Nenhum arquivo ainda.</div>';
+      return;
+    }
+    list.innerHTML = files.map(f => `
+      <div class="file-item">
+        <div>
+          <div class="file-name">${f.name}</div>
+          <div class="file-size">${formatBytes(f.size)}</div>
+        </div>
+        <a class="dl-btn" href="/api/file/${encodeURIComponent(f.name)}">⬇ Salvar</a>
+      </div>
+    `).join('');
+  }
+
+  function formatBytes(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+    return (b/1024/1024).toFixed(1) + ' MB';
+  }
+
+  // Diagnose button
+  document.getElementById('btn-diagnose').addEventListener('click', async () => {
+    const url = document.getElementById('url-input').value.trim();
+    if (!url) return;
+    const cookies = document.getElementById('cookies-input').value.trim();
+    const panel = document.getElementById('diag-panel');
+    panel.style.display = 'block';
+    panel.innerHTML = '<div class="diag-title pulsing">🔍 Analisando formatos disponíveis…</div>';
+    hideMessages();
+
+    try {
+      const res = await fetch('/api/diagnose', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({url, cookies})
+      });
+      const d = await res.json();
+
+      if (d.error) {
+        panel.innerHTML = `
+          <div class="diag-title">❌ Diagnóstico</div>
+          <div class="diag-row"><span class="diag-key">Erro:</span> ${d.error}</div>
+          ${d.logs ? '<div class="diag-row" style="margin-top:8px;color:#555">' + d.logs.slice(-10).join('<br>') + '</div>' : ''}
+        `;
+        return;
+      }
+
+      const fmts = (d.formats || []).map(f =>
+        `<div class="fmt-item">
+          <span style="color:var(--accent);width:60px">${f.ext || '?'}</span>
+          <span style="width:70px">${f.resolution || '—'}</span>
+          <span style="color:#666">${f.vcodec||''} / ${f.acodec||''}</span>
+        </div>`
+      ).join('');
+
+      panel.innerHTML = `
+        <div class="diag-title">✅ Diagnóstico — ${d.formats_count} formato(s) encontrado(s)</div>
+        <div class="diag-row"><span class="diag-key">Título:</span> ${d.title || '—'}</div>
+        <div class="diag-row"><span class="diag-key">Extrator:</span> ${d.extractor || '—'}</div>
+        <div class="diag-row"><span class="diag-key">URL:</span> ${d.webpage_url || '—'}</div>
+        ${fmts ? '<div class="fmt-list"><div style="color:var(--accent2);margin:8px 0 4px">Formatos:</div>' + fmts + '</div>' : ''}
+        ${d.formats_count === 0 ? '<div style="color:var(--danger);margin-top:8px">⚠️ Nenhum formato encontrado — vídeo pode ser DRM ou Vimeo privado sem suporte.</div>' : ''}
+      `;
+    } catch(e) {
+      panel.innerHTML = '<div class="diag-title">❌ Erro ao diagnosticar.</div>';
+    }
+  });
+
+  // Initial load
+  loadFiles();
+  setInterval(loadFiles, 8000);
+</script>
+</body>
+</html>
