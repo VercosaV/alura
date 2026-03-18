@@ -65,20 +65,24 @@ def friendly_error(err: str) -> str:
 
 # ─── Direct download (for signed mp4 URLs like Alura) ────────────────────────
 
-def do_direct_download(download_id: str, url: str, filename_hint: str = "video.mp4"):
+def do_direct_download(download_id: str, url: str, filename_hint: str = "video.mp4", custom_name: str | None = None):
     progress_store[download_id] = {
         "status": "downloading", "percent": 0,
         "speed": "", "eta": "", "filename": "", "error": ""
     }
 
-    # Derive a filename from the URL path
-    path = urllib.parse.urlparse(url).path
-    base = os.path.basename(path) or filename_hint
-    # Strip query string from name if any
-    base = base.split("?")[0]
-    if not base.endswith((".mp4", ".mkv", ".webm", ".mov")):
-        base += ".mp4"
-    base = sanitize(base)
+    # Derive a filename
+    if custom_name:
+        base = sanitize(custom_name)
+        if not base.endswith((".mp4", ".mkv", ".webm", ".mov", ".mp3")):
+            base += ".mp4"
+    else:
+        path = urllib.parse.urlparse(url).path
+        base = os.path.basename(path) or filename_hint
+        base = base.split("?")[0]
+        if not base.endswith((".mp4", ".mkv", ".webm", ".mov")):
+            base += ".mp4"
+        base = sanitize(base)
     dest = os.path.join(DOWNLOAD_DIR, base)
 
     headers = {
@@ -175,7 +179,7 @@ def build_opts(quality: str, cookies_path: str | None,
     return opts
 
 
-def do_yt_dlp_download(download_id: str, url: str, quality: str, cookies_path: str | None):
+def do_yt_dlp_download(download_id: str, url: str, quality: str, cookies_path: str | None, custom_name: str | None = None):
     def progress_hook(d):
         if d["status"] == "downloading":
             total = d.get("total_bytes") or d.get("total_bytes_estimate") or 1
@@ -194,9 +198,13 @@ def do_yt_dlp_download(download_id: str, url: str, quality: str, cookies_path: s
 
     try:
         opts = build_opts(quality, cookies_path, progress_hook)
+        if custom_name:
+            safe = sanitize(custom_name)
+            ext_token = "%(ext)s"
+            opts["outtmpl"] = os.path.join(DOWNLOAD_DIR, f"{safe}.{ext_token}")
         with yt_dlp.YoutubeDL(opts) as ydl:
             info = ydl.extract_info(url, download=True)
-            title = sanitize(info.get("title", "video"))
+            title = sanitize(custom_name or info.get("title", "video"))
             ext = "mp3" if quality == "audio" else "mp4"
             progress_store[download_id].update({
                 "status": "done", "percent": 100,
@@ -212,7 +220,7 @@ def do_yt_dlp_download(download_id: str, url: str, quality: str, cookies_path: s
         })
 
 
-def do_download(download_id: str, url: str, quality: str, cookies: str | None):
+def do_download(download_id: str, url: str, quality: str, cookies: str | None, custom_name: str | None = None):
     progress_store[download_id] = {
         "status": "starting", "percent": 0, "filename": "", "error": ""
     }
@@ -220,9 +228,9 @@ def do_download(download_id: str, url: str, quality: str, cookies: str | None):
     try:
         if is_direct_video_url(url):
             # Direct MP4/video URL — bypass yt-dlp
-            do_direct_download(download_id, url)
+            do_direct_download(download_id, url, custom_name=custom_name)
         else:
-            do_yt_dlp_download(download_id, url, quality, cookies_path)
+            do_yt_dlp_download(download_id, url, quality, cookies_path, custom_name=custom_name)
     finally:
         if cookies_path:
             try: os.remove(cookies_path)
@@ -241,14 +249,15 @@ def start_download():
     data = request.get_json()
     url = data.get("url", "").strip()
     quality = data.get("quality", "best")
-    cookies = data.get("cookies", "").strip() or None
+    cookies     = data.get("cookies", "").strip() or None
+    custom_name = data.get("custom_name", "").strip() or None
     if not url:
         return jsonify({"error": "URL é obrigatória"}), 400
 
     import uuid
     download_id = str(uuid.uuid4())[:8]
     threading.Thread(
-        target=do_download, args=(download_id, url, quality, cookies), daemon=True
+        target=do_download, args=(download_id, url, quality, cookies, custom_name), daemon=True
     ).start()
 
     # Tell the frontend if it's a direct download
