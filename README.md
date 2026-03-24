@@ -16,19 +16,36 @@ Aplicação web local para baixar vídeos do YouTube, Alura, e milhares de outro
 - **macOS:** `brew install ffmpeg`
 - **Linux:** `sudo apt install ffmpeg`
 
-### 2. Instalar dependências
+### 2. Configurar o Ambiente e Instalar Dependências
 
+**Para Windows e macOS:**
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Rodar
+**Para Linux (Zorin OS, Ubuntu e distribuições recentes):**
+Devido a políticas de segurança do sistema, é obrigatório criar um ambiente virtual (`venv`) antes de instalar os pacotes. Siga estes passos no terminal:
+1. Instale o criador de ambientes virtuais: `sudo apt install python3-venv`
+2. Crie o ambiente na pasta do projeto: `python3 -m venv venv`
+3. Ative o ambiente virtual: `source venv/bin/activate`
+4. Com o ambiente ativo, instale as dependências: `pip install -r requirements.txt`
 
+### 3. Rodar a Aplicação
+
+Inicie o servidor local de acordo com o seu sistema:
+
+**Windows/macOS:**
 ```bash
 python app.py
 ```
 
-Acesse: **http://localhost:5000**
+**Linux (Zorin OS):**
+Certifique-se de que o ambiente virtual está ativado (passo 3 acima) e rode:
+```bash
+python3 app.py
+```
+
+Acesse no seu navegador: **http://localhost:5000**
 
 ---
 
