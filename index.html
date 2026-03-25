@@ -18,174 +18,377 @@
       --dim:     #888899;
       --danger:  #f26a6a;
       --warn:    #f2d46a;
+      --info:    #6ab4f2;
       --radius:  12px;
     }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      background: var(--bg); color: var(--text);
+      background: var(--bg);
+      color: var(--text);
       font-family: 'DM Mono', monospace;
-      min-height: 100vh; display: flex; flex-direction: column;
-      align-items: center; padding: 40px 16px 80px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px 80px;
     }
+
+    /* Grade de fundo sutil */
     body::before {
-      content: ''; position: fixed; inset: 0;
+      content: '';
+      position: fixed;
+      inset: 0;
       background-image:
         linear-gradient(rgba(106,242,168,.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(106,242,168,.03) 1px, transparent 1px);
-      background-size: 40px 40px; pointer-events: none; z-index: 0;
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
     }
+
     .wrapper { position: relative; z-index: 1; width: 100%; max-width: 760px; }
 
-    /* ── Header ── */
+    /* ── Cabeçalho ─────────────────────────────────────── */
     header { text-align: center; margin-bottom: 32px; }
     .logo {
-      font-family: 'Syne', sans-serif; font-weight: 800;
-      font-size: clamp(2rem, 8vw, 3.4rem); letter-spacing: -2px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(2rem, 8vw, 3.4rem);
+      letter-spacing: -2px;
       background: linear-gradient(135deg, var(--accent) 0%, #a0f26a 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       line-height: 1;
     }
-    .tagline { margin-top: 6px; color: var(--dim); font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; }
+    .tagline {
+      margin-top: 6px;
+      color: var(--dim);
+      font-size: 0.72rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
 
-    /* ── Card ── */
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px; margin-bottom: 14px; }
-    .tip-card { border-color: rgba(242,168,106,.2); background: rgba(242,168,106,.04); padding: 14px 18px; font-size: 0.74rem; color: var(--dim); line-height: 1.75; position: relative; }
-    .tip-card strong { color: var(--text); }
-    .tip-title { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent2); font-size: 0.78rem; margin-bottom: 6px; }
-    kbd { background: #1a1a2e; padding: 1px 6px; border-radius: 4px; border: 1px solid #333; }
-    .tip-close { position: absolute; top: 10px; right: 12px; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; }
-    .tip-close:hover { color: var(--text); }
-
-    /* ── Queue builder ── */
+    /* ── Cards ─────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 14px;
+    }
     .section-label {
-      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.7rem;
-      letter-spacing: 1.5px; text-transform: uppercase; color: var(--dim); margin-bottom: 10px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .count-badge {
-      background: rgba(106,242,168,.12); color: var(--accent);
-      border-radius: 999px; font-size: 0.68rem; padding: 2px 10px;
-    }
-
-    /* Entry rows */
-    #entries { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
-    .entry-row {
-      display: grid;
-      grid-template-columns: 1fr auto auto;
-      gap: 8px; align-items: center;
-    }
-    .entry-row .url-in, .entry-row .name-in {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: var(--radius); color: var(--text);
-      font-family: 'DM Mono', monospace; font-size: 0.78rem;
-      padding: 9px 13px; outline: none; transition: border-color .2s; width: 100%;
-    }
-    .entry-row .url-in:focus  { border-color: var(--accent); }
-    .entry-row .name-in { border-color: rgba(242,168,106,.25); width: 170px; }
-    .entry-row .name-in:focus { border-color: var(--accent2); }
-    .entry-row .name-in::placeholder { color: var(--muted); font-size: 0.7rem; }
-    .entry-row .url-in::placeholder  { color: var(--muted); }
-    .entry-row .remove-btn {
-      background: none; border: 1px solid var(--border); border-radius: 8px;
-      color: var(--muted); cursor: pointer; font-size: 0.9rem; width: 32px; height: 34px;
-      display: flex; align-items: center; justify-content: center; transition: all .15s; flex-shrink: 0;
-    }
-    .entry-row .remove-btn:hover { border-color: var(--danger); color: var(--danger); }
-    .col-headers {
-      display: grid; grid-template-columns: 1fr 170px 32px;
-      gap: 8px; font-size: 0.64rem; color: var(--muted);
-      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;
-      padding: 0 2px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.7rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
-    /* Bottom row */
-    .bottom-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .quality-group { display: flex; gap: 5px; flex-wrap: wrap; flex: 1; }
-    .quality-btn {
-      font-family: 'DM Mono', monospace; font-size: 0.7rem;
-      padding: 6px 12px; border: 1px solid var(--border);
-      border-radius: 999px; background: transparent; color: var(--dim); cursor: pointer; transition: all .15s;
+    /* ── Inputs ─────────────────────────────────────────── */
+    input[type="url"], input[type="text"], textarea {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      padding: 9px 13px;
+      outline: none;
+      transition: border-color .2s;
+      width: 100%;
     }
-    .quality-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .quality-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(106,242,168,.08); }
+    input:focus, textarea:focus { border-color: var(--accent); }
+    input::placeholder, textarea::placeholder { color: var(--muted); }
 
+    /* ── Botões ─────────────────────────────────────────── */
     .btn {
-      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.8rem;
-      letter-spacing: 1px; text-transform: uppercase; border: none;
-      border-radius: var(--radius); padding: 10px 20px; cursor: pointer; transition: all .2s; white-space: nowrap;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: var(--radius);
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: all .2s;
+      white-space: nowrap;
     }
     .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--dim); }
     .btn-ghost:hover { border-color: var(--muted); color: var(--text); }
     .btn-accent { background: var(--accent); color: #0a0a0f; }
     .btn-accent:hover { background: #7ffcb5; transform: translateY(-1px); }
     .btn-accent:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .btn-danger { background: transparent; border: 1px solid rgba(242,106,106,.3); color: var(--danger); }
+    .btn-danger:hover { background: rgba(242,106,106,.1); }
     .btn-sm { padding: 7px 14px; font-size: 0.72rem; }
 
-    /* ── Queue progress ── */
+    /* ── Preview de vídeo (YouTube) ─────────────────────── */
+    #preview-box {
+      display: none;
+      margin-top: 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    #preview-box.visible { display: flex; }
+    #preview-thumb {
+      width: 120px;
+      height: 68px;
+      object-fit: cover;
+      border-radius: 8px;
+      flex-shrink: 0;
+      background: var(--border);
+    }
+    .preview-meta { flex: 1; overflow: hidden; }
+    .preview-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.78rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .preview-sub { font-size: 0.65rem; color: var(--dim); margin-top: 4px; }
+    .preview-tags { display: flex; gap: 5px; margin-top: 8px; flex-wrap: wrap; }
+    .preview-tag {
+      font-size: 0.6rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--dim);
+      font-family: 'Syne', sans-serif;
+    }
+    .preview-tag.yt { border-color: rgba(242,100,80,.4); color: #f26450; }
+    .preview-tag.res { border-color: rgba(106,180,242,.3); color: var(--info); }
+
+    /* ── Seletor de qualidade ───────────────────────────── */
+    .count-badge {
+      background: rgba(106,242,168,.12);
+      color: var(--accent);
+      border-radius: 999px;
+      font-size: 0.68rem;
+      padding: 2px 10px;
+    }
+    #entries { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .entry-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; }
+    .entry-row .name-in { border-color: rgba(242,168,106,.25); width: 170px; }
+    .entry-row .name-in:focus { border-color: var(--accent2); }
+    .entry-row .remove-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.9rem;
+      width: 32px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .15s;
+      flex-shrink: 0;
+    }
+    .entry-row .remove-btn:hover { border-color: var(--danger); color: var(--danger); }
+    .col-headers {
+      display: grid;
+      grid-template-columns: 1fr 170px 32px;
+      gap: 8px;
+      font-size: 0.64rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+      padding: 0 2px;
+    }
+
+    /* ── Qualidade / Formato ────────────────────────────── */
+    .bottom-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .quality-group { display: flex; gap: 5px; flex-wrap: wrap; flex: 1; align-items: center; }
+    .quality-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--dim);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .quality-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .quality-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(106,242,168,.08); }
+    /* Destaque especial para o botão Mobile */
+    .quality-btn.mobile-btn {
+      border-color: rgba(106,180,242,.35);
+      color: var(--info);
+    }
+    .quality-btn.mobile-btn:hover { border-color: var(--info); background: rgba(106,180,242,.08); }
+    .quality-btn.mobile-btn.active {
+      border-color: var(--info);
+      color: var(--info);
+      background: rgba(106,180,242,.12);
+    }
+
+    /* Tooltip de ajuda para o modo mobile */
+    .help-tip {
+      display: inline-block;
+      font-size: 0.6rem;
+      color: var(--dim);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 1px 7px;
+      cursor: help;
+      position: relative;
+    }
+    .help-tip:hover::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 0.65rem;
+      color: var(--text);
+      white-space: nowrap;
+      z-index: 100;
+      line-height: 1.5;
+      pointer-events: none;
+    }
+
+    /* ── Fila de progresso ──────────────────────────────── */
     #queue-section { display: none; }
     .sec-title {
-      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.7rem;
-      letter-spacing: 2px; text-transform: uppercase; color: var(--dim);
-      margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .badge {
-      display: inline-flex; align-items: center; justify-content: center;
-      background: rgba(106,242,168,.12); color: var(--accent);
-      border-radius: 999px; font-size: 0.62rem; min-width: 20px; height: 20px; padding: 0 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(106,242,168,.12);
+      color: var(--accent);
+      border-radius: 999px;
+      font-size: 0.62rem;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 6px;
     }
-
-    /* Stats */
-    .stats-row { display: flex; gap: 18px; margin-bottom: 12px; font-size: 0.68rem; color: var(--dim); }
+    .stats-row { display: flex; gap: 18px; margin-bottom: 12px; font-size: 0.68rem; color: var(--dim); flex-wrap: wrap; }
     .stats-row b { color: var(--text); }
-
     #queue-list { display: flex; flex-direction: column; gap: 8px; }
     .q-item {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 13px 15px; transition: border-color .3s;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 13px 15px;
     }
     .q-item.downloading { border-color: rgba(106,242,168,.35); }
-    .q-item.done        { border-color: rgba(106,242,168,.55); }
-    .q-item.error       { border-color: rgba(242,106,106,.45); }
-
+    .q-item.done { border-color: rgba(106,242,168,.55); }
+    .q-item.error { border-color: rgba(242,106,106,.45); }
     .q-top { display: flex; align-items: flex-start; gap: 10px; }
     .q-icon { font-size: 1rem; width: 22px; flex-shrink: 0; margin-top: 1px; }
     .q-info { flex: 1; overflow: hidden; }
     .q-name { font-size: 0.8rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .q-url  { font-size: 0.65rem; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    .q-url { font-size: 0.65rem; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
     .q-pill {
-      font-size: 0.62rem; padding: 2px 9px; border-radius: 999px;
-      font-family: 'Syne', sans-serif; font-weight: 700; flex-shrink: 0;
+      font-size: 0.62rem;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      flex-shrink: 0;
     }
-    .q-pill.queued      { background: rgba(136,136,153,.12); color: var(--dim); }
+    .q-pill.queued    { background: rgba(136,136,153,.12); color: var(--dim); }
     .q-pill.downloading { background: rgba(106,242,168,.12); color: var(--accent); }
     .q-pill.processing  { background: rgba(242,212,106,.12); color: var(--warn); }
-    .q-pill.done        { background: rgba(106,242,168,.18); color: var(--accent); }
-    .q-pill.error       { background: rgba(242,106,106,.12); color: var(--danger); }
-
+    .q-pill.done      { background: rgba(106,242,168,.18); color: var(--accent); }
+    .q-pill.error     { background: rgba(242,106,106,.12); color: var(--danger); }
     .q-prog { margin-top: 10px; }
     .q-track { background: var(--border); border-radius: 999px; height: 4px; overflow: hidden; }
-    .q-fill  { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), #a0f26a); width: 0%; transition: width .4s ease; }
-    .q-meta  { display: flex; justify-content: space-between; font-size: 0.62rem; color: var(--dim); margin-top: 4px; }
-    .q-err   { margin-top: 7px; font-size: 0.7rem; color: var(--danger); line-height: 1.5; }
-    .q-save  { display: inline-block; margin-top: 8px; font-size: 0.7rem; color: var(--accent); text-decoration: none; border: 1px solid rgba(106,242,168,.3); border-radius: 8px; padding: 3px 11px; transition: background .15s; }
-    .q-save:hover { background: rgba(106,242,168,.1); }
+    .q-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), #a0f26a); width: 0%; transition: width .4s ease; }
+    .q-meta { display: flex; justify-content: space-between; font-size: 0.62rem; color: var(--dim); margin-top: 4px; }
+    .q-err { margin-top: 7px; font-size: 0.7rem; color: var(--danger); line-height: 1.5; }
+    .q-save { display: inline-block; margin-top: 8px; font-size: 0.7rem; color: var(--accent); text-decoration: none; border: 1px solid rgba(106,242,168,.3); border-radius: 8px; padding: 3px 11px; }
 
-    /* ── Files ── */
+    /* ── Lista de arquivos ──────────────────────────────── */
     #files-list { display: flex; flex-direction: column; gap: 7px; }
     .file-item {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 10px 14px; background: var(--bg);
-      border: 1px solid var(--border); border-radius: var(--radius); transition: border-color .2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      gap: 8px;
     }
-    .file-item:hover { border-color: var(--muted); }
-    .file-name { font-size: 0.74rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 460px; }
+    .file-info { flex: 1; overflow: hidden; }
+    .file-name { font-size: 0.74rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .file-size { font-size: 0.63rem; color: var(--dim); margin-top: 2px; }
-    .dl-btn { font-size: 0.68rem; padding: 5px 12px; background: rgba(106,242,168,.08); border: 1px solid rgba(106,242,168,.2); color: var(--accent); border-radius: 8px; cursor: pointer; font-family: 'Syne', sans-serif; font-weight: 600; text-decoration: none; white-space: nowrap; transition: background .15s; }
-    .dl-btn:hover { background: rgba(106,242,168,.18); }
+    .file-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+    .dl-btn {
+      font-size: 0.68rem;
+      padding: 5px 12px;
+      background: rgba(106,242,168,.08);
+      border: 1px solid rgba(106,242,168,.2);
+      color: var(--accent);
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .del-btn {
+      font-size: 0.68rem;
+      padding: 5px 10px;
+      background: transparent;
+      border: 1px solid rgba(242,106,106,.2);
+      color: rgba(242,106,106,.6);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all .15s;
+      font-family: 'Syne', sans-serif;
+    }
+    .del-btn:hover { border-color: var(--danger); color: var(--danger); background: rgba(242,106,106,.07); }
     .empty-state { text-align: center; padding: 26px 0; color: var(--muted); font-size: 0.74rem; }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spinning { display: inline-block; animation: spin 1s linear infinite; }
+    /* ── Aviso de compatibilidade mobile ────────────────── */
+    .compat-notice {
+      display: none;
+      margin-top: 10px;
+      padding: 9px 12px;
+      background: rgba(106,180,242,.06);
+      border: 1px solid rgba(106,180,242,.2);
+      border-radius: var(--radius);
+      font-size: 0.68rem;
+      color: var(--info);
+      line-height: 1.6;
+    }
+    .compat-notice.visible { display: block; }
   </style>
 </head>
 <body>
@@ -196,15 +399,27 @@
     <div class="tagline">YouTube · Alura · Qualquer URL · Downloads em paralelo</div>
   </header>
 
-  <!-- Tip -->
-  <div class="card tip-card" id="alura-tip">
-    <div class="tip-title">💡 Como baixar da Alura (URL direta .mp4)</div>
-    Abra a aula → <kbd>F12</kbd> → aba <strong>Network</strong> → filtre por <code>mp4</code> → copie a <strong>Request URL</strong> → cole abaixo com um nome.<br>
-    <span style="color:var(--danger);font-size:0.67rem;">⚠️ O token expira em ~10 min — cole e inicie o download imediatamente.</span>
-    <button class="tip-close" onclick="this.parentElement.style.display='none'">✕</button>
+  <!-- Cookies (Alura etc.) -->
+  <div class="card">
+    <div class="section-label">🍪 Autenticação (Obrigatório para Alura e vídeos privados)</div>
+    <textarea id="cookies-in"
+      placeholder="# Netscape HTTP Cookie File...&#10;Cole aqui o conteúdo do cookies.txt se o site exigir login."
+      style="height:60px;"></textarea>
   </div>
 
-  <!-- Input card -->
+  <!-- Extrair Playlist / Curso -->
+  <div class="card">
+    <div class="section-label">📚 Extrair Playlist / Curso completo</div>
+    <div style="display:flex;gap:8px;">
+      <input type="url" id="course-url"
+        placeholder="Ex: youtube.com/playlist?list=... ou cursos.alura.com.br/course/..."
+        style="flex:1;" />
+      <button id="btn-extract" class="btn btn-ghost" style="padding:9px 15px;">🔍 Carregar</button>
+    </div>
+    <div id="extract-status" style="font-size:0.7rem;color:var(--dim);margin-top:8px;"></div>
+  </div>
+
+  <!-- Fila de downloads -->
   <div class="card">
     <div class="section-label">
       Fila de downloads
@@ -213,33 +428,73 @@
 
     <div class="col-headers">
       <span>URL do vídeo</span>
-      <span>Nome do arquivo (opcional)</span>
+      <span>Nome do arquivo</span>
       <span></span>
     </div>
+
     <div id="entries"></div>
 
-    <button class="btn btn-ghost btn-sm" id="btn-add-row" style="width:100%;margin-bottom:14px;">＋ Adicionar linha</button>
+    <!-- Input único + preview: ao colar uma URL do YouTube, aparece a prévia do vídeo -->
+    <div style="margin-bottom:10px;">
+      <input type="url" id="single-url-input"
+        placeholder="Cole uma URL do YouTube ou qualquer vídeo aqui para adicionar..."
+        style="width:100%;" />
+      <!-- Box de preview aparece quando uma URL do YouTube é colada -->
+      <div id="preview-box">
+        <img id="preview-thumb" src="" alt="thumb" />
+        <div class="preview-meta">
+          <div class="preview-title" id="preview-title">—</div>
+          <div class="preview-sub" id="preview-sub"></div>
+          <div class="preview-tags" id="preview-tags"></div>
+        </div>
+        <button class="btn btn-accent btn-sm" id="btn-add-preview" style="flex-shrink:0;">+ Adicionar</button>
+      </div>
+    </div>
 
+    <button class="btn btn-ghost btn-sm" id="btn-add-row"
+      style="width:100%;margin-bottom:14px;">＋ Adicionar linha vazia</button>
+
+    <!-- Seletor de qualidade/formato -->
     <div class="bottom-row">
       <div class="quality-group" id="quality-group">
-        <span style="font-size:.68rem;color:var(--dim);align-self:center;">Qualidade:</span>
+        <span style="font-size:.68rem;color:var(--dim);align-self:center;">Formato:</span>
+
+        <!-- Botões de qualidade padrão -->
         <button class="quality-btn active" data-q="best">Melhor</button>
-        <button class="quality-btn" data-q="1080">1080p</button>
-        <button class="quality-btn" data-q="720">720p</button>
-        <button class="quality-btn" data-q="480">480p</button>
+        <button class="quality-btn" data-q="1080p">1080p</button>
+        <button class="quality-btn" data-q="720p">720p</button>
+        <button class="quality-btn" data-q="480p">480p</button>
+        <button class="quality-btn" data-q="360p">360p</button>
         <button class="quality-btn" data-q="audio">Só áudio</button>
+
+        <!-- Botão Mobile: destaque visual diferente (azul em vez de verde) -->
+        <button class="quality-btn mobile-btn" data-q="mobile">
+          📱 Mobile
+        </button>
+
+        <!-- Tooltip explicativo -->
+        <span class="help-tip"
+          data-tip="Mobile = H.264 + AAC em 720p. Reproduz em qualquer&#10;celular Android/iOS sem precisar de app extra.">
+          ?
+        </span>
       </div>
       <button class="btn btn-accent" id="btn-start" disabled>▶ Baixar tudo</button>
     </div>
+
+    <!-- Aviso que aparece apenas quando o modo Mobile está selecionado -->
+    <div class="compat-notice" id="compat-notice">
+      📱 <strong>Modo Mobile ativado:</strong> os vídeos serão baixados em H.264 + AAC (720p),
+      o formato mais compatível com Android e iOS. Reproduz nativamente na galeria do celular
+      sem precisar de app extra. Requer <strong>ffmpeg</strong> instalado.
+    </div>
   </div>
 
-  <!-- Queue progress -->
+  <!-- Progresso dos downloads -->
   <div class="card" id="queue-section">
     <div class="sec-title">
-      Progresso
-      <span class="badge" id="q-badge">0</span>
+      Progresso <span class="badge" id="q-badge">0</span>
     </div>
-    <div class="stats-row" id="stats-row">
+    <div class="stats-row">
       <div>Concluídos: <b id="st-done">0</b></div>
       <div>Em andamento: <b id="st-active">0</b></div>
       <div>Na fila: <b id="st-queued">0</b></div>
@@ -248,26 +503,61 @@
     <div id="queue-list"></div>
   </div>
 
-  <!-- Files -->
+  <!-- Arquivos baixados -->
   <div class="card">
     <div class="sec-title">Arquivos baixados</div>
-    <div id="files-list"><div class="empty-state">Nenhum arquivo ainda.</div></div>
+    <div id="files-list">
+      <div class="empty-state">Nenhum arquivo ainda.</div>
+    </div>
   </div>
 
 </div>
-<script>
-// ── State ────────────────────────────────────────────────────────────────────
-let selectedQuality = 'best';
-let queue = [];          // [{id, url, name, status, percent, speed, eta, filename, error}]
-let pollTimer = null;
 
-// ── Queue builder ─────────────────────────────────────────────────────────────
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// Estado global da aplicação
+// selectedQuality: qual formato está ativo no momento
+// queue: array de objetos que representa cada download em andamento ou concluído
+// pollTimer: referência ao setInterval do polling (para poder cancelar)
+// previewData: armazena os dados do último preview buscado (título, thumb etc.)
+// ─────────────────────────────────────────────────────────────────────────────
+let selectedQuality = 'best';
+let queue = [];
+let pollTimer = null;
+let previewData = null;
+
+// ─── Utilitários ─────────────────────────────────────────────────────────────
+
+// esc(): escapa caracteres HTML para evitar XSS ao inserir conteúdo dinâmico no DOM.
+// Sempre use ao exibir strings vindas do usuário ou do servidor.
+function esc(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function fmtBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+  return (b / 1024 / 1024).toFixed(1) + ' MB';
+}
+
+// Detecta se a URL é do YouTube para ativar o preview automático
+function isYouTube(url) {
+  return url.includes('youtube.com') || url.includes('youtu.be');
+}
+
+// ─── Gerenciamento de linhas da fila ────────────────────────────────────────
+
 function addRow(url = '', name = '') {
   const row = document.createElement('div');
   row.className = 'entry-row';
+  // Cada linha é um grid com: [input de URL] [input de nome] [botão remover]
   row.innerHTML = `
-    <input class="url-in"  type="url"  placeholder="https://video2.alura.com.br/…mp4?token=…" value="${url}" />
-    <input class="name-in" type="text" placeholder="ex: Aula 01 – Intro" value="${name}" />
+    <input class="url-in" type="url" placeholder="URL do vídeo" value="${esc(url)}" />
+    <input class="name-in" type="text" placeholder="ex: Aula 01" value="${esc(name)}" />
     <button class="remove-btn" title="Remover">✕</button>
   `;
   row.querySelector('.remove-btn').addEventListener('click', () => {
@@ -288,42 +578,224 @@ function updateCount() {
 
 document.getElementById('btn-add-row').addEventListener('click', () => addRow());
 
-// Quality
+// ─── Seleção de qualidade ────────────────────────────────────────────────────
+
 document.querySelectorAll('.quality-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     selectedQuality = btn.dataset.q;
+
+    // Exibe/oculta o aviso de compatibilidade mobile
+    const notice = document.getElementById('compat-notice');
+    if (selectedQuality === 'mobile') {
+      notice.classList.add('visible');
+    } else {
+      notice.classList.remove('visible');
+    }
   });
 });
 
-// ── Start all downloads ───────────────────────────────────────────────────────
+// ─── Preview automático para URLs do YouTube ────────────────────────────────
+// Quando o usuário cola uma URL do YouTube no input de URL única,
+// fazemos uma chamada ao /api/info para buscar título, thumbnail, duração etc.
+// Isso melhora a UX: o usuário confirma que é o vídeo certo antes de baixar.
+
+let previewTimer = null; // debounce para não chamar a API a cada tecla
+
+document.getElementById('single-url-input').addEventListener('input', function () {
+  const url = this.value.trim();
+
+  // Esconde o preview se o campo estiver vazio
+  if (!url) {
+    hidePreview();
+    return;
+  }
+
+  // Para URLs não-YouTube, só adiciona a linha ao pressionar Enter ou colar
+  if (!isYouTube(url)) {
+    hidePreview();
+    return;
+  }
+
+  // Debounce: espera 600ms após o usuário parar de digitar antes de buscar
+  // Evita chamadas desnecessárias enquanto a URL ainda está sendo colada
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(() => fetchPreview(url), 600);
+});
+
+// Adiciona a linha ao pressionar Enter no input de URL única
+document.getElementById('single-url-input').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') {
+    const url = this.value.trim();
+    if (!url) return;
+    if (previewData && previewData.url === url) {
+      // Se já tem preview carregado, adiciona com o título como nome
+      addRow(url, previewData.title || '');
+    } else {
+      addRow(url);
+    }
+    this.value = '';
+    hidePreview();
+    previewData = null;
+  }
+});
+
+async function fetchPreview(url) {
+  const box = document.getElementById('preview-box');
+  // Mostra o box com estado de carregamento
+  box.classList.add('visible');
+  document.getElementById('preview-title').textContent = 'Buscando informações...';
+  document.getElementById('preview-sub').textContent = '';
+  document.getElementById('preview-tags').innerHTML = '';
+  document.getElementById('preview-thumb').src = '';
+
+  try {
+    const cookies = document.getElementById('cookies-in').value.trim();
+    const res = await fetch('/api/info', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, cookies }),
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      document.getElementById('preview-title').textContent = '⚠ ' + data.error;
+      return;
+    }
+
+    // Salva os dados do preview para usar ao adicionar a linha
+    previewData = { ...data, url };
+
+    document.getElementById('preview-title').textContent = data.title || url;
+    document.getElementById('preview-sub').textContent =
+      [data.uploader, data.duration].filter(Boolean).join(' · ');
+
+    if (data.thumbnail) {
+      document.getElementById('preview-thumb').src = data.thumbnail;
+    }
+
+    // Tags de resolução disponível
+    const tagsEl = document.getElementById('preview-tags');
+    tagsEl.innerHTML = '';
+
+    if (data.is_youtube) {
+      tagsEl.innerHTML += `<span class="preview-tag yt">YouTube</span>`;
+    }
+
+    // Mostra as resoluções disponíveis retornadas pelo backend
+    (data.resolutions || []).forEach(r => {
+      tagsEl.innerHTML += `<span class="preview-tag res">${r}p</span>`;
+    });
+
+  } catch (err) {
+    document.getElementById('preview-title').textContent = 'Erro ao buscar informações.';
+  }
+}
+
+function hidePreview() {
+  document.getElementById('preview-box').classList.remove('visible');
+}
+
+// Botão "Adicionar" dentro do box de preview
+document.getElementById('btn-add-preview').addEventListener('click', () => {
+  const url = document.getElementById('single-url-input').value.trim();
+  if (!url) return;
+  const name = previewData?.title || '';
+  addRow(url, name);
+  document.getElementById('single-url-input').value = '';
+  hidePreview();
+  previewData = null;
+});
+
+// ─── Extrair Playlist / Curso ────────────────────────────────────────────────
+
+document.getElementById('btn-extract').addEventListener('click', async () => {
+  const url = document.getElementById('course-url').value.trim();
+  const cookies = document.getElementById('cookies-in').value.trim();
+  if (!url) return;
+
+  const btn = document.getElementById('btn-extract');
+  const status = document.getElementById('extract-status');
+  btn.disabled = true;
+  btn.textContent = '⏳ Carregando...';
+  status.textContent = 'Buscando vídeos...';
+  status.style.color = 'var(--dim)';
+
+  try {
+    const res = await fetch('/api/playlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, cookies }),
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      status.textContent = 'Erro: ' + data.error;
+      status.style.color = 'var(--danger)';
+    } else {
+      status.textContent = `✅ ${data.entries.length} vídeos encontrados em "${data.title}"`;
+      status.style.color = 'var(--accent)';
+      // Limpa a fila e insere os itens extraídos
+      document.getElementById('entries').innerHTML = '';
+      data.entries.forEach(e => addRow(e.url, e.title));
+    }
+  } catch (err) {
+    status.textContent = 'Erro na conexão.';
+    status.style.color = 'var(--danger)';
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🔍 Carregar';
+});
+
+// ─── Iniciar downloads ───────────────────────────────────────────────────────
+
 document.getElementById('btn-start').addEventListener('click', async () => {
+  // Coleta todas as linhas preenchidas da fila
   const rows = [...document.querySelectorAll('.entry-row')];
+  const cookies = document.getElementById('cookies-in').value.trim();
   const items = rows
     .map(r => ({
-      url:  r.querySelector('.url-in').value.trim(),
+      url: r.querySelector('.url-in').value.trim(),
       name: r.querySelector('.name-in').value.trim(),
     }))
-    .filter(i => i.url);
+    .filter(i => i.url); // ignora linhas sem URL
 
   if (!items.length) return;
 
   document.getElementById('btn-start').disabled = true;
   document.getElementById('queue-section').style.display = 'block';
 
-  // Kick off each download in parallel
+  // Dispara cada download em sequência — o backend processa cada um em thread separada,
+  // então na prática eles rodam em paralelo. Aqui apenas registramos todos na fila.
   for (const item of items) {
     const res = await fetch('/api/download', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ url: item.url, quality: selectedQuality, custom_name: item.name }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        url: item.url,
+        quality: selectedQuality,
+        custom_name: item.name,
+        cookies: cookies,
+      }),
     });
     const data = await res.json();
+
     if (data.error) {
-      queue.push({ id: null, url: item.url, name: item.name || item.url, status: 'error', error: data.error, percent: 0 });
+      queue.push({
+        id: null, url: item.url, name: item.name || item.url,
+        status: 'error', error: data.error, percent: 0,
+      });
     } else {
-      queue.push({ id: data.download_id, url: item.url, name: item.name || item.url, status: 'queued', percent: 0 });
+      queue.push({
+        id: data.download_id,
+        url: item.url,
+        name: item.name || item.url,
+        status: 'queued',
+        percent: 0,
+        is_youtube: data.is_youtube,
+      });
     }
   }
 
@@ -331,25 +803,38 @@ document.getElementById('btn-start').addEventListener('click', async () => {
   startPolling();
 });
 
-// ── Polling ───────────────────────────────────────────────────────────────────
+// ─── Polling de progresso ────────────────────────────────────────────────────
+// A cada 700ms, consultamos o /api/progress/<id> para cada item ativo na fila.
+// Quando todos estiverem concluídos ou com erro, paramos o polling.
+
 function startPolling() {
   if (pollTimer) clearInterval(pollTimer);
+
   pollTimer = setInterval(async () => {
     let allDone = true;
+
     for (const item of queue) {
+      // Pula itens já finalizados ou sem ID
       if (!item.id || item.status === 'done' || item.status === 'error') continue;
       allDone = false;
+
       const res = await fetch(`/api/progress/${item.id}`);
-      const d   = await res.json();
-      item.status   = d.status;
-      item.percent  = d.percent || 0;
-      item.speed    = d.speed || '';
-      item.eta      = d.eta   || '';
+      const d = await res.json();
+
+      // Atualiza o estado do item na fila
+      item.status = d.status;
+      item.percent = d.percent || 0;
+      item.speed = d.speed || '';
+      item.eta = d.eta || '';
       item.filename = d.filename || '';
-      item.error    = d.error   || '';
-      if (d.status === 'done') loadFiles();
+      item.error = d.error || '';
+      item.resolution = d.resolution || '';
+
+      if (d.status === 'done') loadFiles(); // atualiza a lista de arquivos ao concluir
     }
+
     renderQueue();
+
     if (allDone) {
       clearInterval(pollTimer);
       document.getElementById('btn-start').disabled = false;
@@ -358,98 +843,126 @@ function startPolling() {
   }, 700);
 }
 
-// ── Render queue ──────────────────────────────────────────────────────────────
-const ICONS = { queued:'⏳', downloading:'⬇', processing:'⚙', done:'✅', error:'❌' };
+// ─── Renderização da fila ────────────────────────────────────────────────────
+
+const ICONS = { queued: '⏳', downloading: '⬇', processing: '⚙', done: '✅', error: '❌' };
+
+function labelOf(s) {
+  return {
+    queued: 'na fila', starting: 'iniciando',
+    downloading: 'baixando', processing: 'processando',
+    done: 'concluído', error: 'erro',
+  }[s] || s;
+}
 
 function renderQueue() {
   const list = document.getElementById('queue-list');
   list.innerHTML = '';
-
   let done = 0, active = 0, queued = 0, errors = 0;
+
   for (const item of queue) {
-    if (item.status === 'done')                        done++;
+    if (item.status === 'done') done++;
     else if (item.status === 'downloading' || item.status === 'processing') active++;
-    else if (item.status === 'queued' || item.status === 'starting')        queued++;
-    else if (item.status === 'error')                  errors++;
+    else if (item.status === 'queued' || item.status === 'starting') queued++;
+    else if (item.status === 'error') errors++;
 
     const el = document.createElement('div');
     el.className = `q-item ${item.status}`;
 
-    const displayName = item.name || item.filename || item.url;
-    const shortUrl    = item.url.length > 60 ? item.url.slice(0, 60) + '…' : item.url;
+    const dName = item.name || item.filename || item.url;
+    const sUrl = item.url.length > 60 ? item.url.slice(0, 60) + '…' : item.url;
 
     let inner = `
       <div class="q-top">
         <div class="q-icon">${ICONS[item.status] || '⏳'}</div>
         <div class="q-info">
-          <div class="q-name">${esc(displayName)}</div>
-          <div class="q-url">${esc(shortUrl)}</div>
+          <div class="q-name">${esc(dName)}</div>
+          <div class="q-url">${esc(sUrl)}</div>
         </div>
         <div class="q-pill ${item.status}">${labelOf(item.status)}</div>
-      </div>
-    `;
+      </div>`;
 
     if (item.status === 'downloading' || item.status === 'processing') {
       inner += `
         <div class="q-prog">
           <div class="q-track"><div class="q-fill" style="width:${item.percent}%"></div></div>
           <div class="q-meta">
-            <span>${item.speed}</span>
-            <span>${item.percent}% ${item.eta ? '· ETA ' + item.eta : ''}</span>
+            <span>${item.speed || ''}</span>
+            <span>${item.percent}%${item.eta ? ' · ETA ' + item.eta : ''}</span>
           </div>
         </div>`;
     }
+
     if (item.status === 'error') {
       inner += `<div class="q-err">${esc(item.error)}</div>`;
     }
+
+    // Link para salvar o arquivo ao concluir
     if (item.status === 'done' && item.filename) {
-      inner += `<a class="q-save" href="/api/file/${encodeURIComponent(item.filename)}">⬇ Salvar</a>`;
+      const resLabel = item.resolution ? ` · ${item.resolution}` : '';
+      inner += `
+        <a class="q-save" href="/api/file/${encodeURIComponent(item.filename)}">
+          ⬇ Salvar ${item.filename}${resLabel}
+        </a>`;
     }
 
     el.innerHTML = inner;
     list.appendChild(el);
   }
 
-  document.getElementById('q-badge').textContent  = queue.length;
-  document.getElementById('st-done').textContent   = done;
+  document.getElementById('q-badge').textContent = queue.length;
+  document.getElementById('st-done').textContent = done;
   document.getElementById('st-active').textContent = active;
   document.getElementById('st-queued').textContent = queued;
   document.getElementById('st-errors').textContent = errors;
 }
 
-function labelOf(s) {
-  return { queued:'na fila', starting:'iniciando', downloading:'baixando',
-           processing:'processando', done:'concluído', error:'erro' }[s] || s;
-}
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+// ─── Lista de arquivos baixados ──────────────────────────────────────────────
 
-// ── Files list ────────────────────────────────────────────────────────────────
 async function loadFiles() {
-  const res   = await fetch('/api/list');
+  const res = await fetch('/api/list');
   const files = await res.json();
-  const list  = document.getElementById('files-list');
-  if (!files.length) { list.innerHTML = '<div class="empty-state">Nenhum arquivo ainda.</div>'; return; }
+  const list = document.getElementById('files-list');
+
+  if (!files.length) {
+    list.innerHTML = '<div class="empty-state">Nenhum arquivo ainda.</div>';
+    return;
+  }
+
   list.innerHTML = files.map(f => `
     <div class="file-item">
-      <div>
+      <div class="file-info">
         <div class="file-name">${esc(f.name)}</div>
         <div class="file-size">${fmtBytes(f.size)}</div>
       </div>
-      <a class="dl-btn" href="/api/file/${encodeURIComponent(f.name)}">⬇ Salvar</a>
+      <div class="file-actions">
+        <a class="dl-btn" href="/api/file/${encodeURIComponent(f.name)}">⬇ Salvar</a>
+        <button class="del-btn" onclick="deleteFile('${esc(f.name)}', this)">🗑</button>
+      </div>
     </div>
   `).join('');
 }
 
-function fmtBytes(b) {
-  if (b < 1024)        return b + ' B';
-  if (b < 1024*1024)   return (b/1024).toFixed(1) + ' KB';
-  return (b/1024/1024).toFixed(1) + ' MB';
+// Deleta um arquivo do servidor via método HTTP DELETE
+// O botão é desabilitado durante a chamada para evitar duplo-clique
+async function deleteFile(name, btn) {
+  if (!confirm(`Remover "${name}" do servidor?`)) return;
+  btn.disabled = true;
+  try {
+    const res = await fetch(`/api/delete/${encodeURIComponent(name)}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.ok) loadFiles();
+    else alert('Erro ao deletar: ' + data.error);
+  } catch (e) {
+    alert('Erro na conexão.');
+    btn.disabled = false;
+  }
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────────
-addRow(); addRow(); addRow();   // start with 3 empty rows
+// ─── Inicialização ───────────────────────────────────────────────────────────
+// Ao carregar a página: adiciona uma linha vazia e carrega os arquivos existentes.
+// O setInterval garante que a lista de arquivos se atualize automaticamente.
+addRow();
 loadFiles();
 setInterval(loadFiles, 10000);
 </script>
