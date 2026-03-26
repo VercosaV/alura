@@ -4,6 +4,7 @@ import threading
 import tempfile
 import urllib.request
 import urllib.parse
+import uuid
 from flask import Flask, request, jsonify, send_from_directory
 import yt_dlp
 
@@ -333,22 +334,87 @@ def do_download(download_id: str, url: str, quality: str, cookies: str | None, c
 def index():
     return send_from_directory(".", "index.html")
 
-
 @app.route('/api/download', methods=['POST'])
-def download_api():
-    data = request.json
+def api_download():
+    data = request.get_json()
+    
     url = data.get('url')
     quality = data.get('quality', 'best')
-    custom_name = data.get('custom_name')
-    cookies = data.get('cookies')
+    custom_name = data.get('custom_name', '').strip()
+    cookies = data.get('cookies', '').strip()
     
-    # NOVAS VARIÁVEIS CAPTURADAS AQUI:
-    folder = data.get('folder', '').strip()
+    # 1. Captura os NOVOS CAMPOS vindos do frontend
+    folder_name = data.get('folder', '').strip()
     mp4_only = data.get('mp4_only', False)
 
-    # ... agora você usa a variável `folder` para modificar 
-    # o caminho (outtmpl) no yt-dlp e `mp4_only` para ajustar o formato.
+    if not url:
+        return jsonify({'error': 'URL não fornecida'}), 400
 
+    # 2. Lógica para determinar a pasta destino
+    # DOWNLOAD_DIR é a sua pasta de downloads padrão do projeto
+    if folder_name:
+        # Cria uma subpasta com o nome fornecido se ela não existir
+        save_path = os.path.join(DOWNLOAD_DIR, folder_name)
+        os.makedirs(save_path, exist_ok=True)
+    else:
+        # Se não escreverem nada, guarda na pasta de downloads normal
+        save_path = DOWNLOAD_DIR
+
+    # 3. Define o nome do arquivo (usando o nome customizado ou o título original)
+    if custom_name:
+        outtmpl = os.path.join(save_path, f"{custom_name}.%(ext)s")
+    else:
+        outtmpl = os.path.join(save_path, '%(title)s.%(ext)s')
+
+    # 4. Configurações básicas do yt-dlp
+    ydl_opts = {
+        'outtmpl': outtmpl,
+        'noplaylist': True, # Garante que baixa só o vídeo se for URL única
+        'quiet': True,
+    }
+
+    # 5. Configuração da Qualidade (Mantendo a sua lógica original)
+    if quality == 'mobile':
+        ydl_opts['format'] = 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]'
+    elif quality == 'audio':
+        ydl_opts['format'] = 'bestaudio/best'
+        ydl_opts['postprocessors'] = [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }]
+    elif quality != 'best':
+        # ex: 1080p, 720p...
+        height = quality.replace('p', '')
+        ydl_opts['format'] = f'bestvideo[height<={height}]+bestaudio/best[height<={height}]'
+
+    # 6. FORÇAR MP4 (Substitui a regra acima se a caixa estiver marcada e não for só áudio)
+    if mp4_only and quality != 'audio':
+        # Mesmo escolhendo 1080p, ele vai forçar o formato de saída para MP4
+        if quality == 'best':
+             ydl_opts['format'] = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
+        ydl_opts['merge_output_format'] = 'mp4'
+
+    # Adiciona os cookies se houver (para Alura, vídeos privados, etc)
+    if cookies:
+        # Dependendo de como você gere os cookies no seu app.py original
+        # Pode ser que você salve num arquivo temp e passe o caminho:
+        # ydl_opts['cookiefile'] = caminho_do_arquivo_temp
+        pass 
+
+    download_id = str(uuid.uuid4())
+    
+    # ... 
+    # AQUI ENTRA A SUA LÓGICA DE THREADS / BACKGROUND QUE JÁ EXISTE NO SEU APP.PY
+    # queue[download_id] = ...
+    # threading.Thread(target=sua_funcao_de_download_em_background, args=(ydl_opts, url, download_id)).start()
+    # ...
+
+    return jsonify({
+        'ok': True,
+        'download_id': download_id,
+        'is_youtube': 'youtube.com' in url or 'youtu.be' in url
+    })
 
 @app.route("/api/playlist", methods=["POST"])
 def extract_playlist():
