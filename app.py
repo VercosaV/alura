@@ -334,40 +334,20 @@ def index():
     return send_from_directory(".", "index.html")
 
 
-@app.route("/api/download", methods=["POST"])
-def start_download():
-    """
-    Inicia um download em background e retorna imediatamente um download_id.
-    O frontend usa esse ID para consultar o progresso via /api/progress/<id>.
-    """
-    data = request.get_json()
-    url = data.get("url", "").strip()
-    quality = data.get("quality", "best")
-    cookies = data.get("cookies", "").strip() or None
-    custom_name = data.get("custom_name", "").strip() or None
+@app.route('/api/download', methods=['POST'])
+def download_api():
+    data = request.json
+    url = data.get('url')
+    quality = data.get('quality', 'best')
+    custom_name = data.get('custom_name')
+    cookies = data.get('cookies')
+    
+    # NOVAS VARIÁVEIS CAPTURADAS AQUI:
+    folder = data.get('folder', '').strip()
+    mp4_only = data.get('mp4_only', False)
 
-    if not url:
-        return jsonify({"error": "URL é obrigatória"}), 400
-
-    # Valida se a qualidade enviada é uma das permitidas
-    if quality not in FORMAT_MAP:
-        quality = "best"
-
-    import uuid
-    download_id = str(uuid.uuid4())[:8]
-
-    # daemon=True: a thread morre junto com o processo principal (não trava o servidor ao fechar)
-    threading.Thread(
-        target=do_download,
-        args=(download_id, url, quality, cookies, custom_name),
-        daemon=True
-    ).start()
-
-    return jsonify({
-        "download_id": download_id,
-        "mode": "direct" if is_direct_video_url(url) else "yt-dlp",
-        "is_youtube": is_youtube_url(url),
-    })
+    # ... agora você usa a variável `folder` para modificar 
+    # o caminho (outtmpl) no yt-dlp e `mp4_only` para ajustar o formato.
 
 
 @app.route("/api/playlist", methods=["POST"])
