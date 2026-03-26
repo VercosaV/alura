@@ -230,7 +230,7 @@
     }
     .quality-btn:hover { border-color: var(--accent); color: var(--accent); }
     .quality-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(106,242,168,.08); }
-    /* Destaque especial para o botão Mobile */
+    
     .quality-btn.mobile-btn {
       border-color: rgba(106,180,242,.35);
       color: var(--info);
@@ -242,7 +242,6 @@
       background: rgba(106,180,242,.12);
     }
 
-    /* Tooltip de ajuda para o modo mobile */
     .help-tip {
       display: inline-block;
       font-size: 0.6rem;
@@ -399,7 +398,6 @@
     <div class="tagline">YouTube · Alura · Qualquer URL · Downloads em paralelo</div>
   </header>
 
-  <!-- Cookies (Alura etc.) -->
   <div class="card">
     <div class="section-label">🍪 Autenticação (Obrigatório para Alura e vídeos privados)</div>
     <textarea id="cookies-in"
@@ -407,7 +405,6 @@
       style="height:60px;"></textarea>
   </div>
 
-  <!-- Extrair Playlist / Curso -->
   <div class="card">
     <div class="section-label">📚 Extrair Playlist / Curso completo</div>
     <div style="display:flex;gap:8px;">
@@ -419,7 +416,6 @@
     <div id="extract-status" style="font-size:0.7rem;color:var(--dim);margin-top:8px;"></div>
   </div>
 
-  <!-- Fila de downloads -->
   <div class="card">
     <div class="section-label">
       Fila de downloads
@@ -434,12 +430,10 @@
 
     <div id="entries"></div>
 
-    <!-- Input único + preview: ao colar uma URL do YouTube, aparece a prévia do vídeo -->
     <div style="margin-bottom:10px;">
       <input type="url" id="single-url-input"
         placeholder="Cole uma URL do YouTube ou qualquer vídeo aqui para adicionar..."
         style="width:100%;" />
-      <!-- Box de preview aparece quando uma URL do YouTube é colada -->
       <div id="preview-box">
         <img id="preview-thumb" src="" alt="thumb" />
         <div class="preview-meta">
@@ -454,12 +448,15 @@
     <button class="btn btn-ghost btn-sm" id="btn-add-row"
       style="width:100%;margin-bottom:14px;">＋ Adicionar linha vazia</button>
 
-    <!-- Seletor de qualidade/formato -->
+    <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+      <span style="font-size:.68rem;color:var(--dim);white-space:nowrap;font-family:'Syne',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:1px;">📁 Pasta:</span>
+      <input type="text" id="folder-name" placeholder="Ex: Minha_Playlist (Opcional)" style="flex:1; padding: 7px 12px;" />
+    </div>
+
     <div class="bottom-row">
       <div class="quality-group" id="quality-group">
         <span style="font-size:.68rem;color:var(--dim);align-self:center;">Formato:</span>
 
-        <!-- Botões de qualidade padrão -->
         <button class="quality-btn active" data-q="best">Melhor</button>
         <button class="quality-btn" data-q="1080p">1080p</button>
         <button class="quality-btn" data-q="720p">720p</button>
@@ -467,21 +464,24 @@
         <button class="quality-btn" data-q="360p">360p</button>
         <button class="quality-btn" data-q="audio">Só áudio</button>
 
-        <!-- Botão Mobile: destaque visual diferente (azul em vez de verde) -->
         <button class="quality-btn mobile-btn" data-q="mobile">
           📱 Mobile
         </button>
 
-        <!-- Tooltip explicativo -->
         <span class="help-tip"
           data-tip="Mobile = H.264 + AAC em 720p. Reproduz em qualquer&#10;celular Android/iOS sem precisar de app extra.">
           ?
         </span>
       </div>
+
+      <div style="display:flex; align-items:center; gap:6px; margin-right: 12px;">
+        <input type="checkbox" id="force-mp4" style="width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer;" />
+        <label for="force-mp4" style="font-size:0.75rem; color:var(--text); cursor:pointer; font-family: 'DM Mono', monospace;">Somente MP4</label>
+      </div>
+
       <button class="btn btn-accent" id="btn-start" disabled>▶ Baixar tudo</button>
     </div>
 
-    <!-- Aviso que aparece apenas quando o modo Mobile está selecionado -->
     <div class="compat-notice" id="compat-notice">
       📱 <strong>Modo Mobile ativado:</strong> os vídeos serão baixados em H.264 + AAC (720p),
       o formato mais compatível com Android e iOS. Reproduz nativamente na galeria do celular
@@ -489,7 +489,6 @@
     </div>
   </div>
 
-  <!-- Progresso dos downloads -->
   <div class="card" id="queue-section">
     <div class="sec-title">
       Progresso <span class="badge" id="q-badge">0</span>
@@ -503,7 +502,6 @@
     <div id="queue-list"></div>
   </div>
 
-  <!-- Arquivos baixados -->
   <div class="card">
     <div class="sec-title">Arquivos baixados</div>
     <div id="files-list">
@@ -514,22 +512,11 @@
 </div>
 
 <script>
-// ─────────────────────────────────────────────────────────────────────────────
-// Estado global da aplicação
-// selectedQuality: qual formato está ativo no momento
-// queue: array de objetos que representa cada download em andamento ou concluído
-// pollTimer: referência ao setInterval do polling (para poder cancelar)
-// previewData: armazena os dados do último preview buscado (título, thumb etc.)
-// ─────────────────────────────────────────────────────────────────────────────
 let selectedQuality = 'best';
 let queue = [];
 let pollTimer = null;
 let previewData = null;
 
-// ─── Utilitários ─────────────────────────────────────────────────────────────
-
-// esc(): escapa caracteres HTML para evitar XSS ao inserir conteúdo dinâmico no DOM.
-// Sempre use ao exibir strings vindas do usuário ou do servidor.
 function esc(s) {
   return String(s)
     .replace(/&/g, '&amp;')
@@ -544,17 +531,13 @@ function fmtBytes(b) {
   return (b / 1024 / 1024).toFixed(1) + ' MB';
 }
 
-// Detecta se a URL é do YouTube para ativar o preview automático
 function isYouTube(url) {
   return url.includes('youtube.com') || url.includes('youtu.be');
 }
 
-// ─── Gerenciamento de linhas da fila ────────────────────────────────────────
-
 function addRow(url = '', name = '') {
   const row = document.createElement('div');
   row.className = 'entry-row';
-  // Cada linha é um grid com: [input de URL] [input de nome] [botão remover]
   row.innerHTML = `
     <input class="url-in" type="url" placeholder="URL do vídeo" value="${esc(url)}" />
     <input class="name-in" type="text" placeholder="ex: Aula 01" value="${esc(name)}" />
@@ -578,15 +561,12 @@ function updateCount() {
 
 document.getElementById('btn-add-row').addEventListener('click', () => addRow());
 
-// ─── Seleção de qualidade ────────────────────────────────────────────────────
-
 document.querySelectorAll('.quality-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     selectedQuality = btn.dataset.q;
 
-    // Exibe/oculta o aviso de compatibilidade mobile
     const notice = document.getElementById('compat-notice');
     if (selectedQuality === 'mobile') {
       notice.classList.add('visible');
@@ -596,41 +576,30 @@ document.querySelectorAll('.quality-btn').forEach(btn => {
   });
 });
 
-// ─── Preview automático para URLs do YouTube ────────────────────────────────
-// Quando o usuário cola uma URL do YouTube no input de URL única,
-// fazemos uma chamada ao /api/info para buscar título, thumbnail, duração etc.
-// Isso melhora a UX: o usuário confirma que é o vídeo certo antes de baixar.
-
-let previewTimer = null; // debounce para não chamar a API a cada tecla
+let previewTimer = null; 
 
 document.getElementById('single-url-input').addEventListener('input', function () {
   const url = this.value.trim();
 
-  // Esconde o preview se o campo estiver vazio
   if (!url) {
     hidePreview();
     return;
   }
 
-  // Para URLs não-YouTube, só adiciona a linha ao pressionar Enter ou colar
   if (!isYouTube(url)) {
     hidePreview();
     return;
   }
 
-  // Debounce: espera 600ms após o usuário parar de digitar antes de buscar
-  // Evita chamadas desnecessárias enquanto a URL ainda está sendo colada
   clearTimeout(previewTimer);
   previewTimer = setTimeout(() => fetchPreview(url), 600);
 });
 
-// Adiciona a linha ao pressionar Enter no input de URL única
 document.getElementById('single-url-input').addEventListener('keydown', function (e) {
   if (e.key === 'Enter') {
     const url = this.value.trim();
     if (!url) return;
     if (previewData && previewData.url === url) {
-      // Se já tem preview carregado, adiciona com o título como nome
       addRow(url, previewData.title || '');
     } else {
       addRow(url);
@@ -643,7 +612,6 @@ document.getElementById('single-url-input').addEventListener('keydown', function
 
 async function fetchPreview(url) {
   const box = document.getElementById('preview-box');
-  // Mostra o box com estado de carregamento
   box.classList.add('visible');
   document.getElementById('preview-title').textContent = 'Buscando informações...';
   document.getElementById('preview-sub').textContent = '';
@@ -664,7 +632,6 @@ async function fetchPreview(url) {
       return;
     }
 
-    // Salva os dados do preview para usar ao adicionar a linha
     previewData = { ...data, url };
 
     document.getElementById('preview-title').textContent = data.title || url;
@@ -675,7 +642,6 @@ async function fetchPreview(url) {
       document.getElementById('preview-thumb').src = data.thumbnail;
     }
 
-    // Tags de resolução disponível
     const tagsEl = document.getElementById('preview-tags');
     tagsEl.innerHTML = '';
 
@@ -683,7 +649,6 @@ async function fetchPreview(url) {
       tagsEl.innerHTML += `<span class="preview-tag yt">YouTube</span>`;
     }
 
-    // Mostra as resoluções disponíveis retornadas pelo backend
     (data.resolutions || []).forEach(r => {
       tagsEl.innerHTML += `<span class="preview-tag res">${r}p</span>`;
     });
@@ -697,7 +662,6 @@ function hidePreview() {
   document.getElementById('preview-box').classList.remove('visible');
 }
 
-// Botão "Adicionar" dentro do box de preview
 document.getElementById('btn-add-preview').addEventListener('click', () => {
   const url = document.getElementById('single-url-input').value.trim();
   if (!url) return;
@@ -707,8 +671,6 @@ document.getElementById('btn-add-preview').addEventListener('click', () => {
   hidePreview();
   previewData = null;
 });
-
-// ─── Extrair Playlist / Curso ────────────────────────────────────────────────
 
 document.getElementById('btn-extract').addEventListener('click', async () => {
   const url = document.getElementById('course-url').value.trim();
@@ -736,7 +698,6 @@ document.getElementById('btn-extract').addEventListener('click', async () => {
     } else {
       status.textContent = `✅ ${data.entries.length} vídeos encontrados em "${data.title}"`;
       status.style.color = 'var(--accent)';
-      // Limpa a fila e insere os itens extraídos
       document.getElementById('entries').innerHTML = '';
       data.entries.forEach(e => addRow(e.url, e.title));
     }
@@ -749,26 +710,26 @@ document.getElementById('btn-extract').addEventListener('click', async () => {
   btn.textContent = '🔍 Carregar';
 });
 
-// ─── Iniciar downloads ───────────────────────────────────────────────────────
-
 document.getElementById('btn-start').addEventListener('click', async () => {
-  // Coleta todas as linhas preenchidas da fila
   const rows = [...document.querySelectorAll('.entry-row')];
   const cookies = document.getElementById('cookies-in').value.trim();
+  
+  // Coletando as novas informações do formulário
+  const folder = document.getElementById('folder-name').value.trim();
+  const mp4Only = document.getElementById('force-mp4').checked;
+
   const items = rows
     .map(r => ({
       url: r.querySelector('.url-in').value.trim(),
       name: r.querySelector('.name-in').value.trim(),
     }))
-    .filter(i => i.url); // ignora linhas sem URL
+    .filter(i => i.url);
 
   if (!items.length) return;
 
   document.getElementById('btn-start').disabled = true;
   document.getElementById('queue-section').style.display = 'block';
 
-  // Dispara cada download em sequência — o backend processa cada um em thread separada,
-  // então na prática eles rodam em paralelo. Aqui apenas registramos todos na fila.
   for (const item of items) {
     const res = await fetch('/api/download', {
       method: 'POST',
@@ -778,6 +739,8 @@ document.getElementById('btn-start').addEventListener('click', async () => {
         quality: selectedQuality,
         custom_name: item.name,
         cookies: cookies,
+        folder: folder,        // Enviando pasta para o Python
+        mp4_only: mp4Only      // Enviando preferência de MP4 para o Python
       }),
     });
     const data = await res.json();
@@ -803,10 +766,6 @@ document.getElementById('btn-start').addEventListener('click', async () => {
   startPolling();
 });
 
-// ─── Polling de progresso ────────────────────────────────────────────────────
-// A cada 700ms, consultamos o /api/progress/<id> para cada item ativo na fila.
-// Quando todos estiverem concluídos ou com erro, paramos o polling.
-
 function startPolling() {
   if (pollTimer) clearInterval(pollTimer);
 
@@ -814,14 +773,12 @@ function startPolling() {
     let allDone = true;
 
     for (const item of queue) {
-      // Pula itens já finalizados ou sem ID
       if (!item.id || item.status === 'done' || item.status === 'error') continue;
       allDone = false;
 
       const res = await fetch(`/api/progress/${item.id}`);
       const d = await res.json();
 
-      // Atualiza o estado do item na fila
       item.status = d.status;
       item.percent = d.percent || 0;
       item.speed = d.speed || '';
@@ -830,7 +787,7 @@ function startPolling() {
       item.error = d.error || '';
       item.resolution = d.resolution || '';
 
-      if (d.status === 'done') loadFiles(); // atualiza a lista de arquivos ao concluir
+      if (d.status === 'done') loadFiles();
     }
 
     renderQueue();
@@ -842,8 +799,6 @@ function startPolling() {
     }
   }, 700);
 }
-
-// ─── Renderização da fila ────────────────────────────────────────────────────
 
 const ICONS = { queued: '⏳', downloading: '⬇', processing: '⚙', done: '✅', error: '❌' };
 
@@ -897,7 +852,6 @@ function renderQueue() {
       inner += `<div class="q-err">${esc(item.error)}</div>`;
     }
 
-    // Link para salvar o arquivo ao concluir
     if (item.status === 'done' && item.filename) {
       const resLabel = item.resolution ? ` · ${item.resolution}` : '';
       inner += `
@@ -916,8 +870,6 @@ function renderQueue() {
   document.getElementById('st-queued').textContent = queued;
   document.getElementById('st-errors').textContent = errors;
 }
-
-// ─── Lista de arquivos baixados ──────────────────────────────────────────────
 
 async function loadFiles() {
   const res = await fetch('/api/list');
@@ -943,8 +895,6 @@ async function loadFiles() {
   `).join('');
 }
 
-// Deleta um arquivo do servidor via método HTTP DELETE
-// O botão é desabilitado durante a chamada para evitar duplo-clique
 async function deleteFile(name, btn) {
   if (!confirm(`Remover "${name}" do servidor?`)) return;
   btn.disabled = true;
@@ -959,9 +909,6 @@ async function deleteFile(name, btn) {
   }
 }
 
-// ─── Inicialização ───────────────────────────────────────────────────────────
-// Ao carregar a página: adiciona uma linha vazia e carrega os arquivos existentes.
-// O setInterval garante que a lista de arquivos se atualize automaticamente.
 addRow();
 loadFiles();
 setInterval(loadFiles, 10000);
