@@ -1,457 +1,265 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VideoGet</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
   <style>
     :root {
-      --bg:      #0a0a0f;
-      --surface: #111118;
-      --border:  #1e1e2e;
-      --accent:  #6af2a8;
-      --accent2: #f2a86a;
-      --muted:   #44445a;
-      --text:    #e8e8f0;
-      --dim:     #888899;
-      --danger:  #f26a6a;
-      --warn:    #f2d46a;
-      --radius:  12px;
+      --bg:#0a0a0f;
+      --surface:#111118;
+      --border:#1e1e2e;
+      --accent:#6af2a8;
+      --accent2:#f2a86a;
+      --muted:#44445a;
+      --text:#e8e8f0;
+      --dim:#888899;
+      --danger:#f26a6a;
+      --warn:#f2d46a;
+      --radius:12px;
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    * { box-sizing:border-box; margin:0; padding:0; }
+
     body {
-      background: var(--bg); color: var(--text);
-      font-family: 'DM Mono', monospace;
-      min-height: 100vh; display: flex; flex-direction: column;
-      align-items: center; padding: 40px 16px 80px;
+      background:var(--bg);
+      color:var(--text);
+      font-family:'DM Mono', monospace;
+      display:flex;
+      justify-content:center;
+      padding:40px 16px;
     }
-    body::before {
-      content: ''; position: fixed; inset: 0;
-      background-image:
-        linear-gradient(rgba(106,242,168,.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(106,242,168,.03) 1px, transparent 1px);
-      background-size: 40px 40px; pointer-events: none; z-index: 0;
-    }
-    .wrapper { position: relative; z-index: 1; width: 100%; max-width: 760px; }
 
-    /* ── Header ── */
-    header { text-align: center; margin-bottom: 32px; }
+    .wrapper { max-width:760px; width:100%; }
+
+    header { text-align:center; margin-bottom:30px; }
+
     .logo {
-      font-family: 'Syne', sans-serif; font-weight: 800;
-      font-size: clamp(2rem, 8vw, 3.4rem); letter-spacing: -2px;
-      background: linear-gradient(135deg, var(--accent) 0%, #a0f26a 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-      line-height: 1;
-    }
-    .tagline { margin-top: 6px; color: var(--dim); font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; }
-
-    /* ── Card ── */
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px; margin-bottom: 14px; }
-    .tip-card { border-color: rgba(242,168,106,.2); background: rgba(242,168,106,.04); padding: 14px 18px; font-size: 0.74rem; color: var(--dim); line-height: 1.75; position: relative; }
-    .tip-card strong { color: var(--text); }
-    .tip-title { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent2); font-size: 0.78rem; margin-bottom: 6px; }
-    kbd { background: #1a1a2e; padding: 1px 6px; border-radius: 4px; border: 1px solid #333; }
-    .tip-close { position: absolute; top: 10px; right: 12px; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; }
-    .tip-close:hover { color: var(--text); }
-
-    /* ── Queue builder ── */
-    .section-label {
-      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.7rem;
-      letter-spacing: 1.5px; text-transform: uppercase; color: var(--dim); margin-bottom: 10px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .count-badge {
-      background: rgba(106,242,168,.12); color: var(--accent);
-      border-radius: 999px; font-size: 0.68rem; padding: 2px 10px;
+      font-family:'Syne';
+      font-weight:800;
+      font-size:2.8rem;
+      background:linear-gradient(135deg,var(--accent),#a0f26a);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
     }
 
-    /* Entry rows */
-    #entries { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .card {
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:20px;
+      margin-bottom:15px;
+    }
+
+    #entries { display:flex; flex-direction:column; gap:8px; }
+
     .entry-row {
-      display: grid;
-      grid-template-columns: 1fr auto auto;
-      gap: 8px; align-items: center;
-    }
-    .entry-row .url-in, .entry-row .name-in {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: var(--radius); color: var(--text);
-      font-family: 'DM Mono', monospace; font-size: 0.78rem;
-      padding: 9px 13px; outline: none; transition: border-color .2s; width: 100%;
-    }
-    .entry-row .url-in:focus  { border-color: var(--accent); }
-    .entry-row .name-in { border-color: rgba(242,168,106,.25); width: 170px; }
-    .entry-row .name-in:focus { border-color: var(--accent2); }
-    .entry-row .name-in::placeholder { color: var(--muted); font-size: 0.7rem; }
-    .entry-row .url-in::placeholder  { color: var(--muted); }
-    .entry-row .remove-btn {
-      background: none; border: 1px solid var(--border); border-radius: 8px;
-      color: var(--muted); cursor: pointer; font-size: 0.9rem; width: 32px; height: 34px;
-      display: flex; align-items: center; justify-content: center; transition: all .15s; flex-shrink: 0;
-    }
-    .entry-row .remove-btn:hover { border-color: var(--danger); color: var(--danger); }
-    .col-headers {
-      display: grid; grid-template-columns: 1fr 170px 32px;
-      gap: 8px; font-size: 0.64rem; color: var(--muted);
-      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;
-      padding: 0 2px;
+      display:grid;
+      grid-template-columns:1fr 160px 30px;
+      gap:8px;
     }
 
-    /* Bottom row */
-    .bottom-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .quality-group { display: flex; gap: 5px; flex-wrap: wrap; flex: 1; }
-    .quality-btn {
-      font-family: 'DM Mono', monospace; font-size: 0.7rem;
-      padding: 6px 12px; border: 1px solid var(--border);
-      border-radius: 999px; background: transparent; color: var(--dim); cursor: pointer; transition: all .15s;
-    }
-    .quality-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .quality-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(106,242,168,.08); }
-
-    .btn {
-      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.8rem;
-      letter-spacing: 1px; text-transform: uppercase; border: none;
-      border-radius: var(--radius); padding: 10px 20px; cursor: pointer; transition: all .2s; white-space: nowrap;
-    }
-    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--dim); }
-    .btn-ghost:hover { border-color: var(--muted); color: var(--text); }
-    .btn-accent { background: var(--accent); color: #0a0a0f; }
-    .btn-accent:hover { background: #7ffcb5; transform: translateY(-1px); }
-    .btn-accent:disabled { opacity: .45; cursor: not-allowed; transform: none; }
-    .btn-sm { padding: 7px 14px; font-size: 0.72rem; }
-
-    /* ── Queue progress ── */
-    #queue-section { display: none; }
-    .sec-title {
-      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.7rem;
-      letter-spacing: 2px; text-transform: uppercase; color: var(--dim);
-      margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
-    }
-    .badge {
-      display: inline-flex; align-items: center; justify-content: center;
-      background: rgba(106,242,168,.12); color: var(--accent);
-      border-radius: 999px; font-size: 0.62rem; min-width: 20px; height: 20px; padding: 0 6px;
+    input {
+      background:var(--bg);
+      border:1px solid var(--border);
+      color:var(--text);
+      padding:8px;
+      border-radius:8px;
     }
 
-    /* Stats */
-    .stats-row { display: flex; gap: 18px; margin-bottom: 12px; font-size: 0.68rem; color: var(--dim); }
-    .stats-row b { color: var(--text); }
+    button {
+      cursor:pointer;
+      border:none;
+      border-radius:8px;
+      padding:8px 12px;
+      font-weight:bold;
+    }
 
-    #queue-list { display: flex; flex-direction: column; gap: 8px; }
+    .btn-main {
+      background:var(--accent);
+      color:black;
+    }
+
+    .btn-clear {
+      background:transparent;
+      border:1px solid var(--border);
+      color:var(--muted);
+    }
+
     .q-item {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 13px 15px; transition: border-color .3s;
+      padding:10px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      margin-bottom:6px;
     }
-    .q-item.downloading { border-color: rgba(106,242,168,.35); }
-    .q-item.done        { border-color: rgba(106,242,168,.55); }
-    .q-item.error       { border-color: rgba(242,106,106,.45); }
 
-    .q-top { display: flex; align-items: flex-start; gap: 10px; }
-    .q-icon { font-size: 1rem; width: 22px; flex-shrink: 0; margin-top: 1px; }
-    .q-info { flex: 1; overflow: hidden; }
-    .q-name { font-size: 0.8rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .q-url  { font-size: 0.65rem; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
-    .q-pill {
-      font-size: 0.62rem; padding: 2px 9px; border-radius: 999px;
-      font-family: 'Syne', sans-serif; font-weight: 700; flex-shrink: 0;
-    }
-    .q-pill.queued      { background: rgba(136,136,153,.12); color: var(--dim); }
-    .q-pill.downloading { background: rgba(106,242,168,.12); color: var(--accent); }
-    .q-pill.processing  { background: rgba(242,212,106,.12); color: var(--warn); }
-    .q-pill.done        { background: rgba(106,242,168,.18); color: var(--accent); }
-    .q-pill.error       { background: rgba(242,106,106,.12); color: var(--danger); }
-
-    .q-prog { margin-top: 10px; }
-    .q-track { background: var(--border); border-radius: 999px; height: 4px; overflow: hidden; }
-    .q-fill  { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), #a0f26a); width: 0%; transition: width .4s ease; }
-    .q-meta  { display: flex; justify-content: space-between; font-size: 0.62rem; color: var(--dim); margin-top: 4px; }
-    .q-err   { margin-top: 7px; font-size: 0.7rem; color: var(--danger); line-height: 1.5; }
-    .q-save  { display: inline-block; margin-top: 8px; font-size: 0.7rem; color: var(--accent); text-decoration: none; border: 1px solid rgba(106,242,168,.3); border-radius: 8px; padding: 3px 11px; transition: background .15s; }
-    .q-save:hover { background: rgba(106,242,168,.1); }
-
-    /* ── Files ── */
-    #files-list { display: flex; flex-direction: column; gap: 7px; }
     .file-item {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 10px 14px; background: var(--bg);
-      border: 1px solid var(--border); border-radius: var(--radius); transition: border-color .2s;
+      display:flex;
+      justify-content:space-between;
+      padding:10px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      margin-bottom:6px;
     }
-    .file-item:hover { border-color: var(--muted); }
-    .file-name { font-size: 0.74rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 460px; }
-    .file-size { font-size: 0.63rem; color: var(--dim); margin-top: 2px; }
-    .dl-btn { font-size: 0.68rem; padding: 5px 12px; background: rgba(106,242,168,.08); border: 1px solid rgba(106,242,168,.2); color: var(--accent); border-radius: 8px; cursor: pointer; font-family: 'Syne', sans-serif; font-weight: 600; text-decoration: none; white-space: nowrap; transition: background .15s; }
-    .dl-btn:hover { background: rgba(106,242,168,.18); }
-    .empty-state { text-align: center; padding: 26px 0; color: var(--muted); font-size: 0.74rem; }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spinning { display: inline-block; animation: spin 1s linear infinite; }
   </style>
 </head>
+
 <body>
 <div class="wrapper">
 
-  <header>
-    <div class="logo">VideoGet</div>
-    <div class="tagline">YouTube · Alura · Qualquer URL · Downloads em paralelo</div>
-  </header>
+<header>
+  <div class="logo">VideoGet</div>
+</header>
 
-  <!-- Tip -->
-  <div class="card tip-card" id="alura-tip">
-    <div class="tip-title">💡 Como baixar da Alura (URL direta .mp4)</div>
-    Abra a aula → <kbd>F12</kbd> → aba <strong>Network</strong> → filtre por <code>mp4</code> → copie a <strong>Request URL</strong> → cole abaixo com um nome.<br>
-    <span style="color:var(--danger);font-size:0.67rem;">⚠️ O token expira em ~10 min — cole e inicie o download imediatamente.</span>
-    <button class="tip-close" onclick="this.parentElement.style.display='none'">✕</button>
-  </div>
+<div class="card">
+  <div id="entries"></div>
+  <button onclick="addRow()">+ Adicionar</button>
+  <button class="btn-main" id="btn-start">▶ Baixar</button>
+</div>
 
-  <!-- Input card -->
-  <div class="card">
-    <div class="section-label">
-      Fila de downloads
-      <span class="count-badge" id="count-badge">0 URLs</span>
-    </div>
+<div class="card">
+  <h3>Progresso</h3>
+  <div id="queue"></div>
+</div>
 
-    <div class="col-headers">
-      <span>URL do vídeo</span>
-      <span>Nome do arquivo (opcional)</span>
-      <span></span>
-    </div>
-    <div id="entries"></div>
-
-    <button class="btn btn-ghost btn-sm" id="btn-add-row" style="width:100%;margin-bottom:14px;">＋ Adicionar linha</button>
-
-    <div class="bottom-row">
-      <div class="quality-group" id="quality-group">
-        <span style="font-size:.68rem;color:var(--dim);align-self:center;">Qualidade:</span>
-        <button class="quality-btn active" data-q="best">Melhor</button>
-        <button class="quality-btn" data-q="1080">1080p</button>
-        <button class="quality-btn" data-q="720">720p</button>
-        <button class="quality-btn" data-q="480">480p</button>
-        <button class="quality-btn" data-q="audio">Só áudio</button>
-      </div>
-      <button class="btn btn-accent" id="btn-start" disabled>▶ Baixar tudo</button>
-    </div>
-  </div>
-
-  <!-- Queue progress -->
-  <div class="card" id="queue-section">
-    <div class="sec-title">
-      Progresso
-      <span class="badge" id="q-badge">0</span>
-    </div>
-    <div class="stats-row" id="stats-row">
-      <div>Concluídos: <b id="st-done">0</b></div>
-      <div>Em andamento: <b id="st-active">0</b></div>
-      <div>Na fila: <b id="st-queued">0</b></div>
-      <div>Erros: <b id="st-errors">0</b></div>
-    </div>
-    <div id="queue-list"></div>
-  </div>
-
-  <!-- Files -->
-  <div class="card">
-    <div class="sec-title">Arquivos baixados</div>
-    <div id="files-list"><div class="empty-state">Nenhum arquivo ainda.</div></div>
-  </div>
+<div class="card">
+  <h3>Arquivos</h3>
+  <div id="files"></div>
+  <button class="btn-clear" onclick="limparTudo()">🧹 Limpar tudo</button>
+</div>
 
 </div>
+
 <script>
-// ── State ────────────────────────────────────────────────────────────────────
-let selectedQuality = 'best';
-let queue = [];          // [{id, url, name, status, percent, speed, eta, filename, error}]
-let pollTimer = null;
+let queue = []
+let poll
 
-// ── Queue builder ─────────────────────────────────────────────────────────────
-function addRow(url = '', name = '') {
-  const row = document.createElement('div');
-  row.className = 'entry-row';
+function addRow(url='', name='') {
+  const row = document.createElement('div')
+  row.className = 'entry-row'
+
   row.innerHTML = `
-    <input class="url-in"  type="url"  placeholder="https://video2.alura.com.br/…mp4?token=…" value="${url}" />
-    <input class="name-in" type="text" placeholder="ex: Aula 01 – Intro" value="${name}" />
-    <button class="remove-btn" title="Remover">✕</button>
-  `;
-  row.querySelector('.remove-btn').addEventListener('click', () => {
-    row.remove();
-    updateCount();
-  });
-  row.querySelector('.url-in').addEventListener('input', updateCount);
-  document.getElementById('entries').appendChild(row);
-  updateCount();
+    <input placeholder="URL" value="${url}">
+    <input placeholder="Nome" value="${name}">
+    <button onclick="this.parentElement.remove()">✕</button>
+  `
+  document.getElementById('entries').appendChild(row)
 }
 
-function updateCount() {
-  const rows = [...document.querySelectorAll('.entry-row .url-in')];
-  const filled = rows.filter(i => i.value.trim()).length;
-  document.getElementById('count-badge').textContent = `${filled} URL${filled !== 1 ? 's' : ''}`;
-  document.getElementById('btn-start').disabled = filled === 0;
-}
+addRow(); addRow();
 
-document.getElementById('btn-add-row').addEventListener('click', () => addRow());
+document.getElementById('btn-start').onclick = async () => {
 
-// Quality
-document.querySelectorAll('.quality-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    selectedQuality = btn.dataset.q;
-  });
-});
+  // 🔥 cria batch no clique
+  const resBatch = await fetch('/api/start-batch', { method:'POST' })
+  const { batch_id } = await resBatch.json()
 
-// ── Start all downloads ───────────────────────────────────────────────────────
-document.getElementById('btn-start').addEventListener('click', async () => {
-  const rows = [...document.querySelectorAll('.entry-row')];
-  const items = rows
-    .map(r => ({
-      url:  r.querySelector('.url-in').value.trim(),
-      name: r.querySelector('.name-in').value.trim(),
-    }))
-    .filter(i => i.url);
+  const rows = document.querySelectorAll('.entry-row')
 
-  if (!items.length) return;
+  for (const r of rows) {
+    const url = r.children[0].value.trim()
+    const name = r.children[1].value.trim()
 
-  document.getElementById('btn-start').disabled = true;
-  document.getElementById('queue-section').style.display = 'block';
+    if (!url) continue
 
-  // Kick off each download in parallel
-  for (const item of items) {
     const res = await fetch('/api/download', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ url: item.url, quality: selectedQuality, custom_name: item.name }),
-    });
-    const data = await res.json();
-    if (data.error) {
-      queue.push({ id: null, url: item.url, name: item.name || item.url, status: 'error', error: data.error, percent: 0 });
-    } else {
-      queue.push({ id: data.download_id, url: item.url, name: item.name || item.url, status: 'queued', percent: 0 });
-    }
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        url,
+        custom_name:name,
+        quality:'best',
+        batch_id
+      })
+    })
+
+    const data = await res.json()
+
+    queue.push({
+      id:data.download_id,
+      url,
+      name,
+      status:'starting',
+      percent:0
+    })
   }
 
-  renderQueue();
-  startPolling();
-});
+  startPolling()
+}
 
-// ── Polling ───────────────────────────────────────────────────────────────────
 function startPolling() {
-  if (pollTimer) clearInterval(pollTimer);
-  pollTimer = setInterval(async () => {
-    let allDone = true;
+  clearInterval(poll)
+
+  poll = setInterval(async () => {
+    let done = true
+
     for (const item of queue) {
-      if (!item.id || item.status === 'done' || item.status === 'error') continue;
-      allDone = false;
-      const res = await fetch(`/api/progress/${item.id}`);
-      const d   = await res.json();
-      item.status   = d.status;
-      item.percent  = d.percent || 0;
-      item.speed    = d.speed || '';
-      item.eta      = d.eta   || '';
-      item.filename = d.filename || '';
-      item.error    = d.error   || '';
-      if (d.status === 'done') loadFiles();
+      if (!item.id || item.status==='done' || item.status==='error') continue
+
+      done = false
+
+      const res = await fetch(`/api/progress/${item.id}`)
+      const d = await res.json()
+
+      Object.assign(item, d)
     }
-    renderQueue();
-    if (allDone) {
-      clearInterval(pollTimer);
-      document.getElementById('btn-start').disabled = false;
-      loadFiles();
+
+    render()
+
+    if (done) {
+      clearInterval(poll)
+      loadFiles()
     }
-  }, 700);
+
+  }, 700)
 }
 
-// ── Render queue ──────────────────────────────────────────────────────────────
-const ICONS = { queued:'⏳', downloading:'⬇', processing:'⚙', done:'✅', error:'❌' };
+function render() {
+  const div = document.getElementById('queue')
+  div.innerHTML = ''
 
-function renderQueue() {
-  const list = document.getElementById('queue-list');
-  list.innerHTML = '';
-
-  let done = 0, active = 0, queued = 0, errors = 0;
-  for (const item of queue) {
-    if (item.status === 'done')                        done++;
-    else if (item.status === 'downloading' || item.status === 'processing') active++;
-    else if (item.status === 'queued' || item.status === 'starting')        queued++;
-    else if (item.status === 'error')                  errors++;
-
-    const el = document.createElement('div');
-    el.className = `q-item ${item.status}`;
-
-    const displayName = item.name || item.filename || item.url;
-    const shortUrl    = item.url.length > 60 ? item.url.slice(0, 60) + '…' : item.url;
-
-    let inner = `
-      <div class="q-top">
-        <div class="q-icon">${ICONS[item.status] || '⏳'}</div>
-        <div class="q-info">
-          <div class="q-name">${esc(displayName)}</div>
-          <div class="q-url">${esc(shortUrl)}</div>
-        </div>
-        <div class="q-pill ${item.status}">${labelOf(item.status)}</div>
+  queue.forEach(i => {
+    div.innerHTML += `
+      <div class="q-item">
+        ${i.name || i.url}<br>
+        ${i.status} - ${i.percent || 0}%
       </div>
-    `;
-
-    if (item.status === 'downloading' || item.status === 'processing') {
-      inner += `
-        <div class="q-prog">
-          <div class="q-track"><div class="q-fill" style="width:${item.percent}%"></div></div>
-          <div class="q-meta">
-            <span>${item.speed}</span>
-            <span>${item.percent}% ${item.eta ? '· ETA ' + item.eta : ''}</span>
-          </div>
-        </div>`;
-    }
-    if (item.status === 'error') {
-      inner += `<div class="q-err">${esc(item.error)}</div>`;
-    }
-    if (item.status === 'done' && item.filename) {
-      inner += `<a class="q-save" href="/api/file/${encodeURIComponent(item.filename)}">⬇ Salvar</a>`;
-    }
-
-    el.innerHTML = inner;
-    list.appendChild(el);
-  }
-
-  document.getElementById('q-badge').textContent  = queue.length;
-  document.getElementById('st-done').textContent   = done;
-  document.getElementById('st-active').textContent = active;
-  document.getElementById('st-queued').textContent = queued;
-  document.getElementById('st-errors').textContent = errors;
+    `
+  })
 }
 
-function labelOf(s) {
-  return { queued:'na fila', starting:'iniciando', downloading:'baixando',
-           processing:'processando', done:'concluído', error:'erro' }[s] || s;
-}
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-// ── Files list ────────────────────────────────────────────────────────────────
 async function loadFiles() {
-  const res   = await fetch('/api/list');
-  const files = await res.json();
-  const list  = document.getElementById('files-list');
-  if (!files.length) { list.innerHTML = '<div class="empty-state">Nenhum arquivo ainda.</div>'; return; }
-  list.innerHTML = files.map(f => `
-    <div class="file-item">
-      <div>
-        <div class="file-name">${esc(f.name)}</div>
-        <div class="file-size">${fmtBytes(f.size)}</div>
+  const res = await fetch('/api/list')
+  const files = await res.json()
+
+  const div = document.getElementById('files')
+  div.innerHTML = ''
+
+  files.forEach(f => {
+    div.innerHTML += `
+      <div class="file-item">
+        ${f.name}
+        <a href="/api/file/${encodeURIComponent(f.name)}">⬇</a>
       </div>
-      <a class="dl-btn" href="/api/file/${encodeURIComponent(f.name)}">⬇ Salvar</a>
-    </div>
-  `).join('');
+    `
+  })
 }
 
-function fmtBytes(b) {
-  if (b < 1024)        return b + ' B';
-  if (b < 1024*1024)   return (b/1024).toFixed(1) + ' KB';
-  return (b/1024/1024).toFixed(1) + ' MB';
-}
+async function limparTudo() {
+  if (!confirm("Apagar tudo?")) return
 
-// ── Init ──────────────────────────────────────────────────────────────────────
-addRow(); addRow(); addRow();   // start with 3 empty rows
-loadFiles();
-setInterval(loadFiles, 10000);
+  await fetch('/api/clear', { method:'POST' })
+
+  queue = []
+  document.getElementById('queue').innerHTML = ''
+  loadFiles()
+}
 </script>
+
 </body>
 </html>
