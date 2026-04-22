@@ -6,106 +6,106 @@
 
 <style>
 :root{
-  --bg:#0f1117;
-  --card:#1a1d25;
-  --border:#2a2f3a;
-  --accent:#6af2a8;
-  --text:#e8e8f0;
-  --muted:#888;
+--bg:#0f1117;
+--card:#1a1d25;
+--border:#2a2f3a;
+--accent:#6af2a8;
+--text:#e8e8f0;
+--muted:#888;
 }
 
 body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:Arial;
-  display:flex;
-  justify-content:center;
-  padding:40px;
+background:var(--bg);
+color:var(--text);
+font-family:Arial;
+display:flex;
+justify-content:center;
+padding:40px;
 }
 
 .container{
-  width:100%;
-  max-width:700px;
+width:100%;
+max-width:700px;
 }
 
 h1{
-  text-align:center;
-  color:var(--accent);
+text-align:center;
+color:var(--accent);
 }
 
 .card{
-  background:var(--card);
-  border:1px solid var(--border);
-  padding:15px;
-  border-radius:10px;
-  margin-bottom:15px;
+background:var(--card);
+border:1px solid var(--border);
+padding:15px;
+border-radius:10px;
+margin-bottom:15px;
 }
 
 input{
-  width:100%;
-  padding:8px;
-  margin-bottom:8px;
-  border-radius:6px;
-  border:1px solid var(--border);
-  background:#111;
-  color:var(--text);
+width:100%;
+padding:8px;
+margin-bottom:8px;
+border-radius:6px;
+border:1px solid var(--border);
+background:#111;
+color:var(--text);
 }
 
 .row{
-  display:flex;
-  gap:8px;
+display:flex;
+gap:8px;
 }
 
 button{
-  padding:8px 12px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  font-weight:bold;
+padding:8px 12px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+font-weight:bold;
 }
 
 .btn-main{
-  background:var(--accent);
-  color:black;
+background:var(--accent);
+color:black;
 }
 
 .btn-secondary{
-  background:#222;
-  color:var(--text);
-  border:1px solid var(--border);
+background:#222;
+color:var(--text);
+border:1px solid var(--border);
 }
 
 .progress-bar{
-  height:6px;
-  background:#222;
-  border-radius:5px;
-  overflow:hidden;
-  margin-top:5px;
+height:6px;
+background:#222;
+border-radius:5px;
+overflow:hidden;
+margin-top:5px;
 }
 
 .progress-fill{
-  height:100%;
-  background:linear-gradient(90deg,#6af2a8,#a0f26a);
-  width:0%;
-  transition:0.4s;
+height:100%;
+background:linear-gradient(90deg,#6af2a8,#a0f26a);
+width:0%;
+transition:0.4s;
 }
 
 .item{
-  margin-bottom:10px;
+margin-bottom:10px;
 }
 
 .file{
-  display:flex;
-  justify-content:space-between;
-  background:#111;
-  padding:8px;
-  border-radius:6px;
-  margin-bottom:5px;
+display:flex;
+justify-content:space-between;
+background:#111;
+padding:8px;
+border-radius:6px;
+margin-bottom:5px;
 }
 
 a{
-  color:var(--accent);
-  text-decoration:none;
+color:var(--accent);
+text-decoration:none;
 }
 </style>
 </head>
@@ -117,144 +117,248 @@ a{
 <h1>VideoGet</h1>
 
 <div class="card">
-  <input id="folder" placeholder="📁 Nome da pasta (ex: curso-js)">
-  
-  <div id="inputs"></div>
+ <input id="folder" placeholder="📁 Nome da pasta (ex: curso-js)">
 
-  <div class="row">
-    <button class="btn-secondary" onclick="add()">+ URL</button>
-    <button class="btn-main" onclick="start()">▶ Baixar</button>
-  </div>
+ <div id="inputs"></div>
+
+ <div class="row">
+ <button class="btn-secondary" onclick="add()">+ URL</button>
+ <button class="btn-secondary" onclick="showExtractModal()">🔍 Analisar URL</button>
+ <button class="btn-main" onclick="start()">▶ Baixar</button>
+ </div>
+ </div>
+
+ <div id="extract-modal" class="card" style="display:none;">
+   <h3>🔍 Extrair Vídeos da Página</h3>
+   <input id="extract-url" placeholder="URL da página (ex: https://exemplo.com/curso)" style="margin-bottom:15px;">
+   <button class="btn-secondary" onclick="extractVideos()">🔎 Extrair Vídeos</button>
+   <button class="btn-secondary" onclick="hideExtractModal()">✖ Fechar</button>
+
+   <div id="extract-results" style="margin-top:15px;"></div>
+
+   <button id="add-selected-btn" class="btn-main" style="display:none; margin-top:10px;" onclick="addSelectedVideos()">➕ Adicionar Selecionados</button>
+ </div>
+
+<div class="card">
+<h3>📊 Progresso</h3>
+<div id="queue"></div>
 </div>
 
 <div class="card">
-  <h3>📊 Progresso</h3>
-  <div id="queue"></div>
-</div>
-
-<div class="card">
-  <h3>📁 Arquivos</h3>
-  <div id="files"></div>
-  <button class="btn-secondary" onclick="clearAll()">🧹 Limpar</button>
+<h3>📁 Arquivos</h3>
+<div id="files"></div>
+<button class="btn-secondary" onclick="clearAll()">🧹 Limpar</button>
 </div>
 
 </div>
 
 <script>
 let queue=[]
+let extractedVideos = [];
 
 function add(url='',name=''){
-  const d=document.createElement('div')
-  d.className='row'
-  d.innerHTML=`
-    <input placeholder="URL" value="${url}">
-    <input placeholder="Nome" value="${name}">
-  `
-  document.getElementById('inputs').appendChild(d)
+const d=document.createElement('div')
+d.className='row'
+d.innerHTML=`
+<input placeholder="URL" value="${url}">
+<input placeholder="Nome" value="${name}">
+`
+document.getElementById('inputs').appendChild(d)
 }
 add()
 
+function showExtractModal(){
+document.getElementById('extract-modal').style.display = 'block';
+}
+
+function hideExtractModal(){
+document.getElementById('extract-modal').style.display = 'none';
+document.getElementById('extract-results').innerHTML = '';
+document.getElementById('add-selected-btn').style.display = 'none';
+}
+
+async function extractVideos(){
+const url = document.getElementById('extract-url').value;
+const resultsDiv = document.getElementById('extract-results');
+const addBtn = document.getElementById('add-selected-btn');
+
+if(!url){
+alert('Por favor, insira uma URL');
+return;
+}
+
+resultsDiv.innerHTML = '<div>🔍 Analisando página...</div>';
+
+try{
+const res = await fetch('/api/extract-video-urls', {
+method: 'POST',
+headers: {'Content-Type': 'application/json'},
+body: JSON.stringify({url: url})
+});
+
+const data = await res.json();
+
+if(data.error){
+resultsDiv.innerHTML = `<div style="color:red;">❌ Erro: ${data.error}</div>`;
+return;
+}
+
+if(!data.videos || data.videos.length === 0){
+resultsDiv.innerHTML = `<div style="color:orange;">⚠️ ${data.message || 'Nenhum vídeo encontrado'}</div>`;
+addBtn.style.display = 'none';
+return;
+}
+
+extractedVideos = data.videos;
+
+let html = `<div style="margin-bottom:10px;"><strong>${data.message}</strong></div>`;
+
+html += '<div style="max-height:300px; overflow-y:auto; border:1px solid var(--border); padding:10px; border-radius:6px;">';
+
+data.videos.forEach((video, idx) => {
+const videoName = video.url.split('/').pop() || `Video ${idx + 1}`;
+html += `
+<div style="margin-bottom:10px; padding:8px; background:#111; border-radius:6px;">
+ <label style="display:flex; align-items:center; cursor:pointer;">
+ <input type="checkbox" id="video-${idx}" style="margin-right:8px;" checked>
+ <div style="flex:1; overflow:hidden;">
+ <div style="font-size:12px; color:var(--muted); word-break:break-all;">${video.url}</div>
+ <div style="font-size:11px; color:var(--muted);">Tipo: ${video.type} | Qualidade: ${video.qualidade || 'N/A'}</div>
+ </div>
+ </label>
+</div>
+`;
+});
+
+html += '</div>';
+
+resultsDiv.innerHTML = html;
+addBtn.style.display = 'block';
+
+}catch(e){
+resultsDiv.innerHTML = `<div style="color:red;">❌ Erro ao conectar ao servidor: ${e.message}</div>`;
+}
+}
+
+function addSelectedVideos(){
+const inputsContainer = document.getElementById('inputs');
+let addedCount = 0;
+
+extractedVideos.forEach((video, idx) => {
+const checkbox = document.getElementById(`video-${idx}`);
+if(checkbox && checkbox.checked){
+add(video.url, '');
+addedCount++;
+}
+});
+
+if(addedCount > 0){
+alert(`${addedCount} vídeo(s) adicionado(s) à lista!`);
+hideExtractModal();
+}
+}
+
 async function start(){
-  const folder=document.getElementById('folder').value
+const folder=document.getElementById('folder').value
 
-  const resBatch=await fetch('/api/start-batch',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({folder})
-  })
-  const {batch_id}=await resBatch.json()
+const resBatch=await fetch('/api/start-batch',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({folder})
+})
+const {batch_id}=await resBatch.json()
 
-  const rows=document.querySelectorAll('#inputs .row')
+const rows=document.querySelectorAll('#inputs .row')
 
-  for(const r of rows){
-    const url=r.children[0].value
-    const name=r.children[1].value
+for(const r of rows){
+const url=r.children[0].value
+const name=r.children[1].value
 
-    if(!url)continue
+if(!url)continue
 
-    const res=await fetch('/api/download',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({url,custom_name:name,batch_id})
-    })
+const res=await fetch('/api/download',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({url,custom_name:name,batch_id})
+})
 
-    const d=await res.json()
+const d=await res.json()
 
-    queue.push({
-      id:d.download_id,
-      name,
-      url,
-      percent:0,
-      status:'queued'
-    })
-  }
+queue.push({
+id:d.download_id,
+name,
+url,
+percent:0,
+status:'queued'
+})
+}
 
-  poll()
+poll()
 }
 
 function poll(){
-  const i=setInterval(async()=>{
-    let done=true
+const i=setInterval(async()=>{
+let done=true
 
-    for(const item of queue){
-      if(item.status==='done'||item.status==='error')continue
+for(const item of queue){
+if(item.status==='done'||item.status==='error')continue
 
-      done=false
+done=false
 
-      const r=await fetch('/api/progress/'+item.id)
-      Object.assign(item,await r.json())
-    }
+const r=await fetch('/api/progress/'+item.id)
+Object.assign(item,await r.json())
+}
 
-    render()
+render()
 
-    if(done){
-      clearInterval(i)
-      loadFiles()
-    }
+if(done){
+clearInterval(i)
+loadFiles()
+}
 
-  },700)
+},700)
 }
 
 function render(){
-  const q=document.getElementById('queue')
-  q.innerHTML=''
+const q=document.getElementById('queue')
+q.innerHTML=''
 
-  queue.forEach(i=>{
-    q.innerHTML+=`
-      <div class="item">
-        <div>${i.name||i.url}</div>
-        <div class="progress-bar">
-          <div class="progress-fill" style="width:${i.percent}%"></div>
-        </div>
-        <small>${i.status} • ${i.percent||0}%</small>
-      </div>
-    `
-  })
+queue.forEach(i=>{
+q.innerHTML+=`
+<div class="item">
+<div>${i.name||i.url}</div>
+<div class="progress-bar">
+<div class="progress-fill" style="width:${i.percent}%"></div>
+</div>
+<small>${i.status} • ${i.percent||0}%</small>
+</div>
+`
+})
 }
 
 async function loadFiles(){
-  const r=await fetch('/api/list')
-  const files=await r.json()
+const r=await fetch('/api/list')
+const files=await r.json()
 
-  const div=document.getElementById('files')
-  div.innerHTML=''
+const div=document.getElementById('files')
+div.innerHTML=''
 
-  files.forEach(f=>{
-    div.innerHTML+=`
-      <div class="file">
-        ${f.name}
-        <a href="/api/file/${encodeURIComponent(f.name)}">⬇</a>
-      </div>
-    `
-  })
+files.forEach(f=>{
+div.innerHTML+=`
+<div class="file">
+${f.name}
+<a href="/api/file/${encodeURIComponent(f.name)}">⬇</a>
+</div>
+`
+})
 }
 
 async function clearAll(){
-  if(!confirm("Apagar tudo?")) return
-  await fetch('/api/clear',{method:'POST'})
-  queue=[]
-  document.getElementById('queue').innerHTML=''
-  loadFiles()
+if(!confirm("Apagar tudo?")) return
+await fetch('/api/clear',{method:'POST'})
+queue=[]
+document.getElementById('queue').innerHTML=''
+loadFiles()
 }
 </script>
 

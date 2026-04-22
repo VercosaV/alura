@@ -6,6 +6,9 @@ import shutil
 from queue import Queue
 from flask import Flask, request, jsonify, send_from_directory
 import yt_dlp
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin, urlparse
 
 from queue import Queue
 
@@ -25,6 +28,54 @@ batch_store = {}
 # 🔥 CONTROLE DE CONCORRÊNCIA
 MAX_DOWNLOADS = 3
 download_queue = Queue()
+
+# FUNÇÕES AUXILIARES PARA EXTRAÇÃO
+
+def video_pattern_check(url):
+    """Checa se a URL corresponde a um padrão de vídeo"""
+    if not url or not isinstance(url, str):
+        return False
+    video_extensions = ['.mp4', '.m3u8', '.ts', '.mpd', '.mov', '.avi', '.wmv', '.webm', '.mkv', '.flv']
+    url_lower = url.lower()
+    return any(ext in url_lower for ext in video_extensions)
+
+def get_mime_type_for_video(video_type):
+    """Retorna o tipo MIME baseado na extensão"""
+    mime_types = {
+        'mp4': 'video/mp4',
+        'm3u8': 'application/x-mpegURL',
+        'mpd': 'application/dash+xml',
+        'ts': 'video/mp2t',
+        'mov': 'video/quicktime',
+        'avi': 'video/x-msvideo',
+        'wmv': 'video/x-ms-wmv',
+        'webm': 'video/webm',
+        'mkv': 'video/x-matroska',
+        'flv': 'video/x-flv'
+    }
+    return mime_types.get(video_type, 'video/mp4')
+
+def get_quality_from_url(url):
+    """Tenta extrair qualidade da URL ou parâmetros"""
+    try:
+        # Procurar por números na URL (720, 1080, 480, etc)
+        quality_match = re.search(r'(\d{3,4})p?', url)
+        if quality_match:
+            return f"{quality_match.group(1)}p"
+
+        # Procurar por qualidade em parâmetros da URL
+        quality_params = ['quality', 'res', 'resolution', 'q', 'bitrate', 'br']
+        from urllib.parse import parse_qs, urlparse
+        parsed = urlparse(url)
+        params = parse_qs(parsed.query)
+
+        for param in quality_params:
+            if param in params:
+                return params[param][0]
+
+        return 'unknown'
+    except:
+        return 'unknown'
 
 def sanitize(name):
     return re.sub(r'[\\/*?:"<>|]', "_", name)
@@ -93,6 +144,190 @@ def worker():
 # inicia workers
 for _ in range(MAX_DOWNLOADS):
     threading.Thread(target=worker, daemon=True).start()
+
+# ─────────────────────────────
+# 🔍 EXTRAÇÃO AUTOMÁTICA DE VÍDEOS
+# ─────────────────────────────
+
+def extrair_urls_video_da_pagina(url, headers=None, cookies=None):
+    """
+    Extrai todas as URLs de vídeo de uma página HTML.
+    Retorna lista de dicts com url, tipo e qualidade (se disponível).
+    """
+    video_urls = []
+
+    try:
+        # Configurar request com headers mais realistas
+        req_headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Language": "pt-BR,pt;q=0.8,en-US;q=0.5,en;q=0.3",
+            "Accept-Encoding": "gzip, deflate, br",
+            "DNT": "1",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none"
+        }
+        if headers:
+            req_headers.update(headers)
+
+        # Fazer requisição
+        response = requests.get(url, headers=req_headers, cookies=cookies or {}, timeout=30)
+        response.raise_for_status()
+
+        # Parser automático (usa html.parser se lxml não estiver disponível)
+        try:
+            soup = BeautifulSoup(response.content, 'lxml')
+        except Exception:
+            soup = BeautifulSoup(response.content, 'html.parser')
+
+        # REGEX para detectar vídeos (mais abrangente)
+        VIDEO_PATTERNS = {
+            'm3u8': r'https?://[^\s"<>]+\.m3u8[^\s"<>]*',
+            'mp4': r'https?://[^\s"<>]+\.mp4[^\s"<>]*',
+            'mpd': r'https?://[^\s"<>]+\.mpd[^\s"<>]*',
+            'ts': r'https?://[^\s"<>]+\.ts[^\s"<>]*',
+            'mov': r'https?://[^\s"<>]+\.mov[^\s"<>]*',
+            'avi': r'https?://[^\s"<>]+\.avi[^\s"<>]*',
+            'wmv': r'https?://[^\s"<>]+\.wmv[^\s"<>]*',
+            'webm': r'https?://[^\s"<>]+\.webm[^\s"<>]*',
+            'mkv': r'https?://[^\s"<>]+\.mkv[^\s"<>]*',
+            'flv': r'https?://[^\s"<>]+\.flv[^\s"<>]*'
+        }
+
+        # Tipos MIME para vídeo
+        VIDEO_MIME_TYPES = [
+            'video/mp4', 'video/webm', 'video/ogg', 'video/quicktime',
+            'video/x-msvideo', 'video/x-flv', 'video/mpeg', 'video/mp2t',
+            'application/x-mpegURL', 'application/dash+xml'
+        ]
+
+        # 1. Extrair de tags <video>
+        for video in soup.find_all('video'):
+            # Atributo src da tag video
+            if video.get('src'):
+                video_url = urljoin(url, video.get('src'))
+                if video_url:
+                    video_urls.append({
+                        'url': video_url,
+                        'type': 'video/mp4',
+                        'qualidade': video.get('data-quality') or video.get('data-quality-src') or video.get('quality') or 'unknown'
+                    })
+
+            # Tags <source> dentro de <video>
+            for source in video.find_all('source'):
+                src = source.get('src')
+                if src:
+                    video_url = urljoin(url, src)
+                    if video_url:
+                        mime_type = source.get('type') or ('video/mp4' if '.mp4' in src else 'video/mp4')
+                        qualidade = source.get('data-quality') or source.get('label') or source.get('res') or source.get('type')
+                        video_urls.append({
+                            'url': video_url,
+                            'type': mime_type,
+                            'qualidade': qualidade or 'unknown'
+                        })
+
+        # 2. Extrair de atributos comuns de dados
+        video_attrs = [
+            'data-video-src', 'data-video-url', 'data-url', 'data-src', 'data-source',
+            'data-video', 'data-video-path', 'data-video-file', 'data-stream', 'data-video-urls'
+        ]
+        for attr in video_attrs:
+            for tag in soup.find_all(attrs={attr: True}):
+                attr_value = tag.get(attr)
+                if attr_value and video_pattern_check(attr_value):
+                    video_url = urljoin(url, attr_value)
+                    if video_url:
+                        video_urls.append({
+                            'url': video_url,
+                            'type': 'video/mp4',
+                            'qualidade': tag.get('data-quality') or tag.get('data-resolution') or 'unknown'
+                        })
+
+        # 3. Procurar em links <a> que apontam para vídeos
+        for link in soup.find_all('a', href=True):
+            href = link.get('href')
+            if href and video_pattern_check(href):
+                video_url = urljoin(url, href)
+                if video_url:
+                    text = link.get_text(strip=True)
+                    video_urls.append({
+                        'url': video_url,
+                        'type': 'video/mp4',
+                        'qualidade': text or 'unknown'
+                    })
+
+        # 4. Procurar em iframes (YouTube, Vimeo, etc)
+        for iframe in soup.find_all('iframe', src=True):
+            src = iframe.get('src')
+            if src and any(domain in src.lower() for domain in ['youtube', 'vimeo', 'player.vimeo']):
+                video_url = urljoin(url, src)
+                if video_url:
+                    video_urls.append({
+                        'url': video_url,
+                        'type': 'video/embed',
+                        'qualidade': 'embed'
+                    })
+
+        # 5. Rastrear todos os padrões de vídeo no HTML
+        html_text = response.text
+        for video_type, pattern in VIDEO_PATTERNS.items():
+            for match in re.finditer(pattern, html_text, re.IGNORECASE):
+                video_url = match.group(0)
+                if video_url and video_url.startswith(('http://', 'https://')):
+                    mime_type = get_mime_type_for_video(video_type)
+                    video_urls.append({
+                        'url': video_url,
+                        'type': mime_type,
+                        'qualidade': get_quality_from_url(video_url)
+                    })
+
+        # Remover duplicatas (usando url como chave)
+        urls_unicas = {}
+        for video in video_urls:
+            urls_unicas[video['url']] = video
+
+        # Validar URLs (verificar se são acessíveis opcionalmente)
+        videos_filtrados = list(urls_unicas.values())
+
+        print(f"[EXTRAÇÃO] Encontrados {len(videos_filtrados)} vídeos únicos")
+        return videos_filtrados
+
+    except Exception as e:
+        print(f"Erro ao extrair vídeos: {e}")
+        return []
+
+@app.route("/api/extract-video-urls", methods=["POST"])
+def extract_video_urls():
+    """
+    Endpoint para extrair URLs de vídeo de uma página.
+    Recebe JSON com url, opcionalmente headers e cookies.
+    """
+    data = request.get_json()
+
+    if not data or 'url' not in data:
+        return jsonify({'error': 'URL é obrigatória'}), 400
+
+    url = data.get('url')
+    headers = data.get('headers', None)
+    cookies = data.get('cookies', None)
+
+    videos = extrair_urls_video_da_pagina(url, headers, cookies)
+
+    if not videos:
+        return jsonify({
+            'videos': [],
+            'message': 'Nenhum vídeo encontrado na página. Verifique se a URL está correta e se você tem acesso (talvez necessite de cookies/autenticação).'
+        })
+
+    return jsonify({
+        'videos': videos,
+        'count': len(videos),
+        'message': f'{len(videos)} vídeo(s) encontrado(s)'
+    })
 
 # ─────────────────────────────
 # 🌐 ROTAS
@@ -174,5 +409,5 @@ def clear():
 # ─────────────────────────────
 
 if __name__ == "__main__":
-    print("🔥 VideoGet rodando em http://localhost:5000")
+    print("** VideoGet running at http://localhost:5000")
     app.run(debug=True)
