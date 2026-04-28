@@ -408,6 +408,15 @@ def clear():
 
 # ─────────────────────────────
 
-if __name__ == "__main__":
-    print("** VideoGet running at http://localhost:5000")
-    app.run(debug=True)
+#if __name__ == "__main__":
+#    print("** VideoGet running at http://localhost:5000")
+#    app.run(debug=True)
+
+import os
+
+# ... resto do seu código ...
+
+if __name__ == '__main__':
+    # O Render define a variável PORT. Se não encontrar (rodando local), usa 5000.
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
