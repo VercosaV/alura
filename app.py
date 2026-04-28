@@ -10,7 +10,60 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 
-from queue import Queue
+# ─────────────────────────────
+# ☁️ CLOUDFLARE R2 CONFIG
+# ─────────────────────────────
+USE_R2 = os.environ.get('USE_R2', 'false').lower() == 'true'
+
+if USE_R2:
+    import boto3
+    from botocore.config import Config
+    
+    R2_ENDPOINT = os.environ.get('R2_ENDPOINT')  # ex: https://account-id.r2.cloudflarestorage.com
+    R2_ACCESS_KEY = os.environ.get('R2_ACCESS_KEY')
+    R2_SECRET_KEY = os.environ.get('R2_SECRET_KEY')
+    R2_BUCKET = os.environ.get('R2_BUCKET')
+    R2_PUBLIC_URL = os.environ.get('R2_PUBLIC_URL')  # ex: https://files.seusite.com
+    
+    s3_client = boto3.client(
+        's3',
+        endpoint_url=R2_ENDPOINT,
+        aws_access_key_id=R2_ACCESS_KEY,
+        aws_secret_access_key=R2_SECRET_KEY,
+        region_name='auto',
+        config=Config(signature_version='s3v4')
+    )
+    
+    def upload_to_r2(local_path, s3_key):
+        """Faz upload do arquivo para R2"""
+        s3_client.upload_file(local_path, R2_BUCKET, s3_key)
+        # Retorna URL pública direta
+        return f"{R2_PUBLIC_URL}/{s3_key}"
+    
+    def delete_from_r2(s3_key):
+        """Remove arquivo do R2"""
+        s3_client.delete_object(Bucket=R2_BUCKET, Key=s3_key)
+    
+    def list_r2_files():
+        """Lista arquivos no R2"""
+        try:
+            response = s3_client.list_objects_v2(Bucket=R2_BUCKET)
+            files = []
+            if 'Contents' in response:
+                for obj in response['Contents']:
+                    files.append({
+                        "name": obj['Key'],
+                        "size": obj['Size'],
+                        "url": f"{R2_PUBLIC_URL}/{obj['Key']}"
+                    })
+            return files
+        except Exception as e:
+            print(f"Erro ao listar R2: {e}")
+            return []
+
+# ─────────────────────────────
+# 📦 CONFIGURAÇÃO GERAL
+# ─────────────────────────────
 
 MAX_DOWNLOADS = 3  # 🔥 limite simultâneo
 download_queue = Queue()
@@ -103,6 +156,7 @@ def baixar_video(download_id, url, folder, custom_name):
 
     try:
         filename = sanitize(custom_name or "%(title)s")
+        local_path = os.path.join(folder, f"{filename}.mp4")
 
         opts = {
             "format": "best",
@@ -115,11 +169,29 @@ def baixar_video(download_id, url, folder, custom_name):
         with yt_dlp.YoutubeDL(opts) as ydl:
             info = ydl.extract_info(url, download=True)
             final_name = sanitize(custom_name or info.get("title", "video")) + ".mp4"
+            
+            # Encontrar o arquivo baixado (pode ter extensão diferente)
+            downloaded_files = [f for f in os.listdir(folder) if f.startswith(filename)]
+            if downloaded_files:
+                local_path = os.path.join(folder, downloaded_files[0])
+
+            # ☁️ Se R2 está habilitado, fazer upload
+            if USE_R2:
+                s3_key = f"{folder}/{final_name}"
+                file_url = upload_to_r2(local_path, s3_key)
+                # Remove arquivo local após upload
+                try:
+                    os.remove(local_path)
+                except:
+                    pass
+            else:
+                file_url = final_name
 
             progress_store[download_id] = {
                 "status": "done",
                 "percent": 100,
-                "filename": final_name
+                "filename": final_name,
+                "url": file_url if USE_R2 else None
             }
 
     except Exception as e:

@@ -1,0 +1,10 @@
+{
+  "github.copilot.advanced": {
+    "currentWorkspaceContext": true
+  },
+  "search.useIgnoreFiles": true,
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true
+  }
+}
