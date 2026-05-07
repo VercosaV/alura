@@ -1,0 +1,82 @@
+{
+   "delayForHideCursor": {
+      "description": "",
+      "message": "最大化影片後自動隱藏滑鼠游標。"
+   },
+   "dontSelectVideo": {
+      "description": "",
+      "message": "手動選擇要最大化的影片"
+   },
+   "execute": {
+      "description": "",
+      "message": "影片最大化"
+   },
+   "extDescription": {
+      "description": "",
+      "message": "將 HTML5/Flash 影片放到最大，填滿頁面。"
+   },
+   "extName": {
+      "description": "",
+      "message": "Maximize Video"
+   },
+   "iconColor": {
+      "description": "",
+      "message": "工具列圖示顏色"
+   },
+   "iconColorBlack": {
+      "description": "",
+      "message": "黑"
+   },
+   "iconColorWhite": {
+      "description": "",
+      "message": "白"
+   },
+   "ignoreTinyElement": {
+      "description": "",
+      "message": "忽略小型元素："
+   },
+   "installPopupWindow": {
+      "description": "",
+      "message": "https://chromewebstore.google.com/detail/popup-window/nnlippelgfbglbhiccffmnmlnhmbjjpe"
+   },
+   "maximizeThisVideo": {
+      "description": "",
+      "message": "將此影片最大化"
+   },
+   "minHeight": {
+      "description": "",
+      "message": "最小高度"
+   },
+   "minWidth": {
+      "description": "",
+      "message": "最小寬度"
+   },
+   "needOtherAddon": {
+      "description": "",
+      "message": "**要啟用此功能需另外安裝 Popup Window 套件："
+   },
+   "optionPageTitle": {
+      "description": "",
+      "message": "Maximize Video 設定："
+   },
+   "popupWindow": {
+      "description": "",
+      "message": "影片最大化後自動彈出至獨立視窗"
+   },
+   "selectFirstVideo": {
+      "description": "",
+      "message": "自動最大化頁面中第一個找到的影片(如果三秒內沒找到任何影片，將自動取消)"
+   },
+   "supportFlash": {
+      "description": "",
+      "message": "支援 Flash 影片"
+   },
+   "toolbarAction": {
+      "description": "",
+      "message": "於工具列啟動後："
+   },
+   "youtubeControllers": {
+      "description": "",
+      "message": "在 Youtube 網站使用原有的播放器控制列"
+   }
+}

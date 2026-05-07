@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkextension=self.webpackChunkextension||[]).push([["31"],{67783(e,s,n){n.d(s,{Light:()=>i});var t=n(26633),a=n(62298),g=(0,t.A)(a,{});g.registerLanguage=a.registerLanguage;let i=g}}]);

@@ -1,0 +1,82 @@
+{
+   "delayForHideCursor": {
+      "description": "",
+      "message": "When maximize video, auto hide mouse cursor."
+   },
+   "dontSelectVideo": {
+      "description": "",
+      "message": "Manual selct video element"
+   },
+   "execute": {
+      "description": "",
+      "message": "Maximize video"
+   },
+   "extDescription": {
+      "description": "",
+      "message": "Maximize HTML5/Flash video and fill current tab."
+   },
+   "extName": {
+      "description": "",
+      "message": "Maximize Video"
+   },
+   "iconColor": {
+      "description": "",
+      "message": "Toolbar button icon color"
+   },
+   "iconColorBlack": {
+      "description": "",
+      "message": "Black"
+   },
+   "iconColorWhite": {
+      "description": "",
+      "message": "White"
+   },
+   "ignoreTinyElement": {
+      "description": "",
+      "message": "Ignore tiny element:"
+   },
+   "installPopupWindow": {
+      "description": "",
+      "message": "https://chromewebstore.google.com/detail/popup-window/nnlippelgfbglbhiccffmnmlnhmbjjpe"
+   },
+   "maximizeThisVideo": {
+      "description": "",
+      "message": "Maximize this video"
+   },
+   "minHeight": {
+      "description": "",
+      "message": "Minimum height"
+   },
+   "minWidth": {
+      "description": "",
+      "message": "Minimum width"
+   },
+   "needOtherAddon": {
+      "description": "",
+      "message": "**You need install another add-on 'Popup Window' to enable this function: "
+   },
+   "optionPageTitle": {
+      "description": "",
+      "message": "Maximize Video Preferences:"
+   },
+   "popupWindow": {
+      "description": "",
+      "message": "After maximize video, pop-up current tab to standalone window"
+   },
+   "selectFirstVideo": {
+      "description": "",
+      "message": "Auto maximize first video element(If not found any video element in 3 seconds, auto cancel)"
+   },
+   "supportFlash": {
+      "description": "",
+      "message": "Support Flash video"
+   },
+   "toolbarAction": {
+      "description": "",
+      "message": "Toolbar button action:"
+   },
+   "youtubeControllers": {
+      "description": "",
+      "message": "Keep original video controls on Youtube"
+   }
+}

@@ -1,0 +1,300 @@
+{
+   "appConnector": {
+      "message": "$1 Connector"
+   },
+   "copyUnproxiedLink": {
+      "message": "Copy Unproxied Link"
+   },
+   "copyUnproxiedPageURL": {
+      "message": "Copy Unproxied Page URL"
+   },
+   "error_connection_downloadOrTroubleshoot": {
+      "message": "You can \u003Ca href=\"$1\">download $2\u003C/a> or \u003Ca href=\"$3\">troubleshoot the connection\u003C/a> if necessary."
+   },
+   "error_connection_enableSavingToOnlineLibrary": {
+      "message": "Enable Saving to Online Library"
+   },
+   "error_connection_isAppRunning": {
+      "message": "Is $1 Running?"
+   },
+   "error_connection_save": {
+      "description": "$1 will contain the localized string 'Zotero Connector'. $2 will contain the app name. $3 will contain the domain name.",
+      "message": "The $1 was unable to communicate with the $2 desktop application. The Connector can save some pages directly to your $3 account, but for best results you should make sure $2 is open before attempting to save."
+   },
+   "extensionIsDisabled": {
+      "message": "$1 Connector is not available on this page"
+   },
+   "extensionIsDisabled_extensionPage": {
+      "message": "$1 Connector is not available on extension pages"
+   },
+   "extensionIsDisabled_fileURL": {
+      "message": "$1 Connector is not available on file URLs"
+   },
+   "firstRun_acceptButton": {
+      "description": "The Accept button for the first-run dialog",
+      "message": "Got it"
+   },
+   "firstRun_text1": {
+      "message": "The $1 Connector enables you to \u003Ca href=\"$2\">save items to $1\u003C/a> from your browser in a single click."
+   },
+   "firstRun_text2": {
+      "message": "If you haven’t yet, \u003Ca href=\"$2\">download\u003C/a> the $1 application for the best experience."
+   },
+   "firstRun_title": {
+      "message": "You’ve installed the $1 Connector!"
+   },
+   "general_cancel": {
+      "message": "Cancel"
+   },
+   "general_continue": {
+      "message": "Continue"
+   },
+   "general_continueAnyway": {
+      "message": "Continue Anyway"
+   },
+   "general_copyToClipboard": {
+      "message": "Copy to Clipboard"
+   },
+   "general_deselectAll": {
+      "message": "Deselect All"
+   },
+   "general_done": {
+      "message": "Done"
+   },
+   "general_dontWarnAgain": {
+      "message": "Don't Warn Again"
+   },
+   "general_more": {
+      "message": "More…"
+   },
+   "general_moreInfo": {
+      "message": "More Info…"
+   },
+   "general_needHelp": {
+      "message": "Need help?"
+   },
+   "general_no": {
+      "message": "No"
+   },
+   "general_ok": {
+      "message": "OK"
+   },
+   "general_pleaseWait": {
+      "message": "Please wait…"
+   },
+   "general_saveTo": {
+      "message": "Save to $1"
+   },
+   "general_selectAll": {
+      "message": "Select All"
+   },
+   "general_tryAgain": {
+      "message": "Try Again"
+   },
+   "general_warning": {
+      "message": "Warning"
+   },
+   "general_yes": {
+      "message": "Yes"
+   },
+   "integration_error_clientUpgrade": {
+      "message": "Web-based citing requires $1 or later."
+   },
+   "integration_error_connection": {
+      "description": "$1 will be the localized string for the extension (e.g., Zotero Connector). $2 will be the app name (e.g., Zotero).",
+      "message": "The $1 was unable to communicate with the $2 desktop application. $2 must be open to use web-based citing."
+   },
+   "integration_googleDocs_authScopeError": {
+      "message": "$1 needs permission to edit your Google Docs documents in order to insert citations. Please try again, and be sure to allow $1 to see, edit, create, and delete your Google Docs documents."
+   },
+   "integration_googleDocs_disabledTooltip": {
+      "message": "Citing with $1 is disabled in Suggesting mode. Switch to Editing mode to enable citing."
+   },
+   "integration_googleDocs_documentLocked": {
+      "message": "The document citations are being edited by another $1 user. Please try again later."
+   },
+   "integration_googleDocs_documentLocked_moreInfo": {
+      "message": "$1 locks your document to prevent multiple users from editing citations at the same time. Concurrent citation editing in the document may lead to citation or document corruption. Certain unforeseeable circumstances, such as network failures, may lead to your document becoming permanently locked. If you believe this has happened, you can override the lock.\u003Cbr/>\u003Cbr/>Would you like to override the document lock?"
+   },
+   "integration_googleDocs_documentPermissionError": {
+      "message": "The Google account you selected does not have permission to edit this document. Please try again, and be sure to choose the account with editing access."
+   },
+   "integration_googleDocs_docxAlert": {
+      "message": "$1 integration is not available when editing Microsoft Word .docx files directly in Google Docs. Choose File → Save as Google Docs to enable this functionality.\u003Cbr/>\u003Cbr/>If you want to transfer a Word document with $1 citations to Google Docs, see \u003Ca href=\"https://www.zotero.org/support/kb/moving_documents_between_word_processors\">Moving Documents Between Word Processors\u003C/a>."
+   },
+   "integration_googleDocs_largeDoc": {
+      "message": "Your document is over $1 pages long. Citing with $2 in large Google Docs documents is not recommended due to performance issues and difficulty in troubleshooting citation problems. Consider moving your document to LibreOffice or Microsoft Word.\u003Cbr/>\u003Cbr/>See \u003Ca href=\"https://www.zotero.org/support/kb/moving_documents_between_word_processors\">Moving Documents Between Word Processors\u003C/a> for more information."
+   },
+   "integration_googleDocs_orphanedCitations_alert": {
+      "message": "The citation you are trying to edit has become unlinked from $1."
+   },
+   "integration_googleDocs_orphanedCitations_alertButton": {
+      "message": "Relink Citation"
+   },
+   "integration_googleDocs_orphanedCitations_buttonTooltip": {
+      "message": "Show unlinked $1 citations"
+   },
+   "integration_googleDocs_orphanedCitations_disclaimer": {
+      "message": "These citations have become \u003Ca target=\"_blank\" href=\"https://www.zotero.org/support/kb/google_docs_citations_unlinked\">unlinked from $1\u003C/a>. You will need to relink them before they will update or appear in your bibliography."
+   },
+   "integration_googleDocs_unlinkBeforeSaving_downloadAnyway": {
+      "message": "Download Linked Version Anyway"
+   },
+   "integration_googleDocs_unlinkBeforeSaving_instructions": {
+      "message": "To generate a version suitable for sharing, select \u003Cb>Make a copy…\u003C/b> from the File menu, select \u003Cb>Unlink Citations\u003C/b> from the Zotero menu in the new document, and then download the unlinked version. Keep this original linked document in case you need to make further changes."
+   },
+   "integration_googleDocs_unlinkBeforeSaving_warning": {
+      "message": "This document contains active Zotero citations that will appear as zotero.org links in a downloaded copy."
+   },
+   "integration_googleDocs_updating": {
+      "message": "$1 is updating your document."
+   },
+   "itemSelector_pattern": {
+      "message": "Pattern"
+   },
+   "itemSelector_title": {
+      "message": "Select which items you’d like to add to your library:"
+   },
+   "itemType_attachment": {
+      "message": "Attachment"
+   },
+   "itemType_epub": {
+      "message": "EPUB attachment"
+   },
+   "itemType_link": {
+      "message": "Web link"
+   },
+   "itemType_note": {
+      "message": "Note"
+   },
+   "itemType_pdf": {
+      "message": "PDF attachment"
+   },
+   "itemType_snapshot": {
+      "message": "Snapshot"
+   },
+   "itemType_webpage": {
+      "message": "Web Page"
+   },
+   "permissions_siteAccess_message": {
+      "message": "\u003Cp>Zotero Connector requires permission to run on all websites to function properly.\u003C/p>\u003Cp>To enable this, change the \"Site Access\" setting to \"On all sites\" in the Extension Preferences page.\u003C/p>"
+   },
+   "permissions_siteAccess_openPreferences": {
+      "message": "Open Extension Preferences"
+   },
+   "permissions_siteAccess_title": {
+      "message": "Site Access Permissions Required"
+   },
+   "progressWindow_OA_searching": {
+      "message": "Searching for open-access version…"
+   },
+   "progressWindow_allDone": {
+      "message": "Saving is complete. The dialog will close now."
+   },
+   "progressWindow_alreadySaved": {
+      "message": "Items from this webpage have already been saved."
+   },
+   "progressWindow_collectionSelector": {
+      "message": "Target collection selector"
+   },
+   "progressWindow_detailsBtnHide": {
+      "message": "Hide details"
+   },
+   "progressWindow_detailsBtnView": {
+      "message": "View details"
+   },
+   "progressWindow_downloadComplete": {
+      "message": "Saved $1"
+   },
+   "progressWindow_downloadCompletePlural": {
+      "message": "Saved $1 for item $2"
+   },
+   "progressWindow_downloadFailed": {
+      "message": "Failed download of $1"
+   },
+   "progressWindow_downloadFailedPlural": {
+      "message": "Failed download of $1 for item $2"
+   },
+   "progressWindow_error_fallback": {
+      "description": "The placeholders will contain the names of Zotero translators (e.g., JSTOR or Embedded Metadata).",
+      "message": "An error occurred saving with $1. Attempting to save using $2 instead."
+   },
+   "progressWindow_error_siteAccessLimits": {
+      "message": "Site Access Limits"
+   },
+   "progressWindow_error_siteAccessLimitsError": {
+      "description": "The placeholders are for the failing translator label (e.g., Google Scholar) and the Site Access Limits link",
+      "message": "An error occurred while saving this item. $1 may limit the number of items you can save at once. See $2 for more information."
+   },
+   "progressWindow_error_translation": {
+      "message": "An error occurred while saving this item. See $1 for more information."
+   },
+   "progressWindow_error_troubleshootingTranslatorIssues": {
+      "message": "Troubleshooting Translator Issues"
+   },
+   "progressWindow_error_upgradeClient": {
+      "description": "$2 will be a link with the localized text 'latest version'.",
+      "message": "This feature is not supported by your version of $1. Please upgrade to the $2."
+   },
+   "progressWindow_error_upgradeClient_latestVersion": {
+      "message": "latest version"
+   },
+   "progressWindow_filterPlaceholder": {
+      "message": "Filter Collections"
+   },
+   "progressWindow_noteEditorPlaceholder": {
+      "message": "Add a note"
+   },
+   "progressWindow_removeTag": {
+      "message": "Click to remove tag"
+   },
+   "progressWindow_saveItem": {
+      "message": "Item $1: $2"
+   },
+   "progressWindow_savingItem": {
+      "message": "Saving item $1"
+   },
+   "progressWindow_savingItems": {
+      "message": "Saving $1 items. $2"
+   },
+   "progressWindow_savingTo": {
+      "message": "Saving to"
+   },
+   "progressWindow_tagPlaceholder": {
+      "message": "Tags"
+   },
+   "proxy_validate_hostProxyExists": {
+      "message": "A proxy is already defined for $1. Please remove the entry in the existing proxy or change the hostname."
+   },
+   "proxy_validate_openAthens_domainInvalid": {
+      "message": "The OpenAthens redirector domain is invalid. Please enter a valid OpenAthens redirector domain."
+   },
+   "proxy_validate_schemeDuplicate": {
+      "message": "A proxy with the same login URL scheme is already defined. Please remove the existing proxy or change the login URL scheme."
+   },
+   "proxy_validate_schemeInvalid": {
+      "message": "The Proxied URL scheme is invalid. Please enter a valid proxied URL scheme."
+   },
+   "proxy_validate_schemeNoPath": {
+      "message": "The login URL scheme does not contain a path (%p). Please enter a valid login URL scheme."
+   },
+   "reloadVia": {
+      "message": "Reload via $1"
+   },
+   "reloadViaProxy": {
+      "message": "Reload via Proxy"
+   },
+   "reports_debug_output_submitted": {
+      "message": "Your debug output has been submitted.\n\nThe Debug ID is $1."
+   },
+   "reports_report_submitted": {
+      "message": "Your error report has been submitted.\n\nReport ID: $1\n\nPlease post a message to the Zotero Forums with this Report ID, a description of the problem, and any steps necessary to reproduce it.\n\nError reports are not reviewed unless referred to in the forums."
+   },
+   "reports_submission_failed": {
+      "description": "$1 will be the error message sent to the Zotero servers",
+      "message": "An error occurred submitting your report.\n\n$1\n\nPlease check your internet connection. If the problem persists, post a message to the Zotero Forums."
+   },
+   "upgradeApp": {
+      "message": "Upgrade $1"
+   }
+}

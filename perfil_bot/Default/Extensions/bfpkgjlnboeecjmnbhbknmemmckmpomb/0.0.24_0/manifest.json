@@ -1,0 +1,54 @@
+{
+   "action": {
+      "browser_style": true,
+      "default_icon": "icon/icon_b.png",
+      "default_title": "__MSG_extDescription__"
+   },
+   "author": "Ett Chung",
+   "background": {
+      "service_worker": "js/service-worker.js",
+      "type": "module"
+   },
+   "commands": {
+      "maximizeVideo": {
+         "description": "__MSG_execute__",
+         "suggested_key": {
+            "default": "Alt+Shift+M"
+         }
+      }
+   },
+   "content_scripts": [ {
+      "all_frames": true,
+      "css": [ "css/maximizeVideo.css" ],
+      "js": [ "js/content-script.js" ],
+      "matches": [ "http://*/*", "https://*/*", "file:///*" ],
+      "run_at": "document_start"
+   }, {
+      "all_frames": false,
+      "css": [ "css/ytb.css" ],
+      "js": [ "js/ytb.js" ],
+      "matches": [ "https://www.youtube.com/*" ],
+      "run_at": "document_start"
+   } ],
+   "default_locale": "en",
+   "description": "__MSG_extDescription__",
+   "homepage_url": "https://github.com/ettoolong/MaximizeVideo",
+   "icons": {
+      "16": "icon/icon.png",
+      "32": "icon/icon.png",
+      "48": "icon/icon.png",
+      "64": "icon/icon.png",
+      "96": "icon/icon.png"
+   },
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuG1lUi9bnafF0pXEFNIyrIqshSMQib+uNbvvAJUeF61Cig7X/RWxDah1ArHT8+fS0AF3JysZlqwAPhjnDpWuA4oxqQsLZGRzomgl5/FrMvPtsk9Cdd4JsKZD/W2GoPE+eOzCX8qKyOGMIsUHQlOe/Mo39BtjTNC/Qeu4LIXSxa3C6eOizslzwENxxuqj41KgwZrKxvGpknXdnBwpzhTFEXUPbv4VpKSwerSIev7pB8zXuSH1t/T63gN53fJO/g08xzgeFxvhw1Ngzv601Uec0lxYb370mt6ptqwa064w+SqIMbUbgfeyqE/XzXAKV6FZDoZJUrU7q9qii1lWY/SzQQIDAQAB",
+   "manifest_version": 3,
+   "minimum_chrome_version": "125",
+   "name": "__MSG_extName__",
+   "options_ui": {
+      "open_in_tab": false,
+      "page": "options.html"
+   },
+   "permissions": [ "storage" ],
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "0.0.24"
+}

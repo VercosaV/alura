@@ -1,0 +1,43 @@
+{
+   "action": {
+      "default_icon": "assets/logo48.png",
+      "default_title": "Mendeley Web Importer"
+   },
+   "background": {
+      "service_worker": "background.js"
+   },
+   "commands": {
+      "_execute_action": {
+         "suggested_key": {
+            "default": "Ctrl+Shift+L",
+            "mac": "Command+Shift+L"
+         }
+      }
+   },
+   "content_scripts": [ {
+      "js": [ "content.js" ],
+      "matches": [ "\u003Call_urls>" ]
+   } ],
+   "content_security_policy": {
+      "extension_pages": "script-src 'self'; object-src 'self'"
+   },
+   "default_locale": "en",
+   "description": "__MSG_appDesc__",
+   "host_permissions": [ "\u003Call_urls>" ],
+   "icons": {
+      "128": "assets/logo128.png",
+      "16": "assets/logo16.png",
+      "48": "assets/logo48.png"
+   },
+   "incognito": "split",
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgsFbC2OVooVovua34FWKZpfepLals2QdXhXgU4mj7hZ64Xk0iwA1wcn87FlXNwFTbb0XR6nUp4eu1MkG/QuRtAtH7u4IlHDy+Pl1iu8mjmYY+x9aeZA9/7s59piOxZjq1TFAwm+xu8TkW2Nbcw8lhn49Y0wpy0mMSbBgX/tvcHieg/aOA2gfr5XW3wDdfsXznCyLHZnZC5evKUyfDnNBKu31HBQpELgG9VacV4CRUla+IGHNbMngYw1jlQ8dtnY/iBJYI6+WvPbvkeP7F7/82JpgvAc/CEsr35QQcVba5GqcgTZmmsGD5pMBw2gbwS8BqC9celTTFotBZfnwEyOKkwIDAQAB",
+   "manifest_version": 3,
+   "name": "Mendeley Web Importer",
+   "permissions": [ "notifications", "scripting", "storage", "webRequest" ],
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "3.3.49",
+   "web_accessible_resources": [ {
+      "matches": [ "\u003Call_urls>" ],
+      "resources": [ "index.html", "fonts/NexusSansWebPro-Bold.*", "fonts/NexusSansWebPro-Regular.*", "assets/logoTransparent.png" ]
+   } ]
+}

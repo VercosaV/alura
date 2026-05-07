@@ -1,0 +1,152 @@
+[mvclass=show] *:not([mvclass=show]):not([mvclass=core]) {
+  display:none !important;
+  opacity:0 !important;
+  visibility: hidden !important;
+}
+
+[mvclass=show-t] >*:not([mvclass=show-t]):not([mvclass=core]) {
+  display:none !important;
+  opacity:0 !important;
+  visibility: hidden !important;
+}
+
+[mvclass=show],
+[mvclass=show-t] {
+  contain:unset !important;
+  min-width:0px !important;
+  min-height:0px !important;
+  width:0px !important;
+  height:0px !important;
+  transform: none !important;
+  -webkit-transform:none !important;
+  transform-style:flat !important;
+  -webkit-transformStyle:flat !important;
+  border-width:0px !important;
+  will-change:auto !important;
+  mask-image: unset !important;
+  -webkit-mask-image: unset !important;
+  container-type: normal !important;
+  background: none !important;
+}
+
+video[mvclass=core] {
+  background-color:black;
+}
+
+.controls[mvclass=core],
+.hover-display[mvclass=core],
+.pl-controls-bottom[mvclass=core],
+.player-streamstatus[mvclass=core],
+.player-controls-bottom[mvclass=core] {
+  position: fixed !important;
+  z-index: 2147483640;
+}
+
+.pl-controls-bottom[mvclass=core]:hover,
+.player-controls-bottom[mvclass=core]:hover {
+  opacity: 1 !important;
+}
+
+.hover-display[mvclass=core] {
+  width: 100% !important;
+}
+
+.hover-display[mvclass=core]:hover {
+  opacity: 1 !important;
+}
+
+.hover-display[mvclass=core] .pl-pinned-panel {
+  display: none !important;
+}
+
+html[mvclass=core],
+body[mvclass=show],
+body[mvclass=show-t] {
+  contain:unset !important;
+  background-color: #000 !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.mvCover {
+  display: block;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  z-index: 2147483641;
+  background-color: black;
+  opacity: 0.5;
+  left: 0;
+  top: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.mvVideoBlock {
+  display: block;
+  position:absolute;
+  z-index: 2147483642;
+  background-color: red;
+  opacity: 0.25;
+  margin: 0;
+  padding: 0;
+}
+
+.mvVideoBlock.mvHighLevel {
+  z-index: 2147483643;
+}
+
+.mvVideoBlock:hover {
+  opacity: 0.5;
+}
+
+[mvclass="show-t"] [data-a-target="player-settings-submenu-advanced-toggle-mini"] {
+  display:none !important;
+}
+
+/* ref: https://chromium.googlesource.com/chromium/blink/+/72fef91ac1ef679207f51def8133b336a6f6588f/Source/core/css/mediaControls.css */
+/* ref: https://chromium.googlesource.com/chromium/src/third_party/+/master/blink/renderer/modules/media_controls/resources/modernMediaControls.css */
+
+/* -webkit-media-controls */
+video[mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core]::-webkit-media-controls {
+  width: inherit !important;
+  height: inherit !important;
+  position: relative;
+  direction: ltr !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+}
+
+/* -webkit-media-controls-fullscreen-button */
+/* video[mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core]::-webkit-media-controls-fullscreen-button {
+  display: flex !important;
+} */
+
+/* -webkit-internal-media-controls-download-button */
+video[mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core]::-internal-media-controls-download-button {
+  display: flex !important;
+}
+
+/* -webkit-media-controls-panel */
+video[mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core]::-webkit-media-controls-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  position: absolute !important;
+  bottom: 0px !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* -webkit-media-controls-enclosure */
+video[mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core]::-webkit-media-controls-enclosure {
+	overflow: auto !important;
+}
+
+
+video[mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core][mvclass=core]::-webkit-media-controls-timeline {
+	width: calc(100% - 32px) !important;
+}
