@@ -73,3 +73,20 @@ yt-dlp suporta mais de 1.000 sites. Exemplos:
 - Twitter/X, Instagram, TikTok
 - Twitch (VODs)
 - E muito mais: https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md
+
+
+## ✨ Novas funcionalidades
+
+### Progresso total de playlists
+
+Ao baixar uma playlist, a barra principal representa a tarefa inteira. A interface informa o percentual agregado, o item atual, o total de itens, quantos já foram concluídos, o percentual do item atual, a velocidade e o ETA quando fornecidos pelo `yt-dlp`. Assim, uma playlist com 87 vídeos pode ser acompanhada como uma única tarefa.
+
+### Criar áudio sem apagar o vídeo
+
+Na biblioteca, vídeos possuem o botão **Criar áudio**. Escolha MP3 (192 kbps), M4A/AAC ou WAV. A conversão usa o `ffmpeg`, cria um novo arquivo na mesma pasta e mantém o vídeo original intacto. Se já existir um nome igual, um nome alternativo é usado para evitar sobrescrita. Áudios aparecem com player próprio e também podem ser salvos pelo botão **Salvar**.
+
+A biblioteca agora lista vídeos e áudios, permitindo reproduzir, salvar e mover ambos os tipos.
+
+## Observação sobre o GitHub
+
+Esta versão foi preparada localmente para testes. Nenhum commit ou push foi feito no repositório remoto.
