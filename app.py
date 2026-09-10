@@ -2,6 +2,7 @@ import mimetypes
 import os
 import re
 import shutil
+import subprocess
 import tempfile
 import threading
 import time
@@ -18,11 +19,14 @@ BASE_DIR = Path(__file__).resolve().parent
 DOWNLOAD_DIR = BASE_DIR / "downloads"
 DOWNLOAD_DIR.mkdir(exist_ok=True)
 progress_store = {}
+progress_lock = threading.Lock()
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 )
-VIDEO_EXTENSIONS = {".mp4", ".mkv", ".webm", ".mov", ".m4v", ".avi", ".mp3", ".m4a", ".wav"}
+VIDEO_EXTENSIONS = {".mp4", ".mkv", ".webm", ".mov", ".m4v", ".avi"}
+AUDIO_EXTENSIONS = {".mp3", ".m4a", ".wav", ".aac", ".flac", ".ogg", ".opus"}
+MEDIA_EXTENSIONS = VIDEO_EXTENSIONS | AUDIO_EXTENSIONS
 
 
 def sanitize(value: str, fallback: str = "video") -> str:
@@ -42,13 +46,22 @@ def safe_folder(value: str | None) -> Path:
     return target
 
 
+def safe_media_path(relative: str) -> Path:
+    path = (DOWNLOAD_DIR / (relative or "")).resolve()
+    if DOWNLOAD_DIR.resolve() not in path.parents or not path.is_file():
+        raise ValueError("Arquivo de mídia não encontrado")
+    if path.suffix.lower() not in MEDIA_EXTENSIONS:
+        raise ValueError("Formato de mídia não suportado")
+    return path
+
+
 def relative_name(path: Path) -> str:
     return path.resolve().relative_to(DOWNLOAD_DIR.resolve()).as_posix()
 
 
 def is_direct_video_url(url: str) -> bool:
     path = urllib.parse.urlparse(url).path.lower()
-    return any(path.endswith(ext) for ext in VIDEO_EXTENSIONS if ext != ".mp3")
+    return any(path.endswith(ext) for ext in VIDEO_EXTENSIONS)
 
 
 def write_cookies_file(cookies_text: str) -> str:
@@ -77,14 +90,15 @@ def friendly_error(err: str) -> str:
 
 
 def update_progress(download_id: str, **values):
-    progress_store.setdefault(download_id, {}).update(values)
+    with progress_lock:
+        progress_store.setdefault(download_id, {}).update(values)
 
 
 def direct_filename(url: str, hint: str) -> str:
     path_name = Path(urllib.parse.urlparse(url).path).name
     candidate = path_name if path_name else sanitize(hint, "video.mp4")
     candidate = sanitize(candidate, "video.mp4")
-    if Path(candidate).suffix.lower() not in VIDEO_EXTENSIONS:
+    if Path(candidate).suffix.lower() not in MEDIA_EXTENSIONS:
         candidate += ".mp4"
     return candidate
 
@@ -106,10 +120,13 @@ def do_direct_download(download_id: str, url: str, folder: Path, filename_hint: 
                 elapsed = max(time.time() - started, 0.001)
                 speed = downloaded / elapsed
                 percent = int(downloaded / total * 100) if total else 0
-                update_progress(download_id, status="downloading", percent=percent, speed=format_speed(speed),
+                update_progress(download_id, status="downloading", percent=percent, current_percent=percent,
+                                items_total=1, items_completed=0, current_item=1, speed=format_speed(speed),
                                 eta=format_eta(total, downloaded, speed), filename=name)
         temporary.replace(destination)
-        update_progress(download_id, status="done", percent=100, filename=relative_name(destination), title=Path(name).stem)
+        update_progress(download_id, status="done", percent=100, current_percent=100,
+                        items_total=1, items_completed=1, current_item=1,
+                        filename=relative_name(destination), title=Path(name).stem)
     except Exception as exc:
         temporary.unlink(missing_ok=True)
         update_progress(download_id, status="error", error=friendly_error(str(exc)))
@@ -139,7 +156,7 @@ def build_opts(quality: str, folder: Path, cookies_path: str | None, progress_ho
         "format": formats.get(quality, formats["best"]),
         "outtmpl": str(folder / "%(title)s [%(id)s].%(ext)s"),
         "quiet": True, "no_warnings": True, "merge_output_format": "mp4",
-        "noplaylist": True, "continuedl": True, "retries": 3, "fragment_retries": 3,
+        "noplaylist": False, "continuedl": True, "retries": 3, "fragment_retries": 3,
         "concurrent_fragment_downloads": 4, "skip_download": skip_download,
         "http_headers": {"User-Agent": USER_AGENT, "Referer": "https://cursos.alura.com.br/"},
         "check_formats": False,
@@ -154,29 +171,57 @@ def build_opts(quality: str, folder: Path, cookies_path: str | None, progress_ho
 
 
 def do_yt_dlp_download(download_id: str, url: str, quality: str, folder: Path, cookies_path: str | None):
+    state = {"items_total": 1, "items_completed": 0, "current_item": 1, "current_percent": 0}
+
     def progress_hook(data):
+        info = data.get("info_dict") or {}
+        item_index = int(info.get("playlist_index") or state["current_item"] or 1)
+        total = int(info.get("playlist_count") or info.get("n_entries") or state["items_total"] or 1)
+        state.update(items_total=max(total, item_index), current_item=item_index)
         if data["status"] == "downloading":
-            total = data.get("total_bytes") or data.get("total_bytes_estimate") or 1
-            update_progress(download_id, status="downloading", percent=int(data.get("downloaded_bytes", 0) / total * 100),
-                            speed=data.get("_speed_str", ""), eta=data.get("_eta_str", ""))
+            total_bytes = data.get("total_bytes") or data.get("total_bytes_estimate") or 1
+            item_percent = min(100, int(data.get("downloaded_bytes", 0) / total_bytes * 100))
+            state["current_percent"] = item_percent
+            aggregate = int(((item_index - 1) * 100 + item_percent) / state["items_total"])
+            update_progress(download_id, status="downloading", percent=aggregate,
+                            current_percent=item_percent, items_total=state["items_total"],
+                            items_completed=item_index - 1, current_item=item_index,
+                            speed=data.get("_speed_str", ""), eta=data.get("_eta_str", ""),
+                            current_title=info.get("title", ""))
         elif data["status"] == "finished":
-            update_progress(download_id, status="processing", percent=99, filename=relative_name(Path(data["filename"])))
+            state["items_completed"] = max(state["items_completed"], item_index)
+            aggregate = int(state["items_completed"] * 100 / state["items_total"])
+            filename = data.get("filename")
+            update_progress(download_id, status="processing", percent=min(99, aggregate),
+                            current_percent=100, items_total=state["items_total"],
+                            items_completed=state["items_completed"], current_item=item_index,
+                            filename=relative_name(Path(filename)) if filename else "",
+                            current_title=info.get("title", ""))
 
     try:
+        update_progress(download_id, status="starting", percent=0, current_percent=0,
+                        items_total=1, items_completed=0, current_item=1)
         with yt_dlp.YoutubeDL(build_opts(quality, folder, cookies_path, progress_hook)) as ydl:
             info = ydl.extract_info(url, download=True)
+        if info.get("_type") == "playlist":
+            entries = [entry for entry in (info.get("entries") or []) if entry]
+            state["items_total"] = max(state["items_total"], len(entries))
         title = sanitize(info.get("title", "video"))
         extension = "mp3" if quality == "audio" else "mp4"
         matches = sorted(folder.glob(f"{title}*"), key=lambda path: path.stat().st_mtime, reverse=True)
         filename = relative_name(matches[0]) if matches else f"{folder.name}/{title}.{extension}"
-        update_progress(download_id, status="done", percent=100, filename=filename, title=info.get("title", title),
-                        thumbnail=info.get("thumbnail", ""), duration=info.get("duration_string", ""))
+        update_progress(download_id, status="done", percent=100, current_percent=100,
+                        items_total=state["items_total"], items_completed=state["items_total"],
+                        current_item=state["items_total"], filename=filename,
+                        title=info.get("title", title), thumbnail=info.get("thumbnail", ""),
+                        duration=info.get("duration_string", ""))
     except Exception as exc:
         update_progress(download_id, status="error", error=friendly_error(str(exc)))
 
 
 def do_download(download_id: str, url: str, quality: str, cookies: str | None, folder_name: str, filename_hint: str):
-    update_progress(download_id, status="starting", percent=0, filename="", error="")
+    update_progress(download_id, status="starting", percent=0, current_percent=0,
+                    items_total=1, items_completed=0, current_item=1, filename="", error="")
     cookies_path = write_cookies_file(cookies) if cookies else None
     try:
         folder = safe_folder(folder_name)
@@ -187,6 +232,37 @@ def do_download(download_id: str, url: str, quality: str, cookies: str | None, f
     finally:
         if cookies_path:
             os.unlink(cookies_path) if os.path.exists(cookies_path) else None
+
+
+def unique_output(source: Path, extension: str) -> Path:
+    candidate = source.with_suffix(f".{extension}")
+    if candidate.resolve() == source.resolve() or candidate.exists():
+        candidate = source.with_name(f"{source.stem} (áudio).{extension}")
+    counter = 2
+    while candidate.exists():
+        candidate = source.with_name(f"{source.stem} (áudio {counter}).{extension}")
+        counter += 1
+    return candidate
+
+
+def do_convert(convert_id: str, source: Path, target: Path, audio_format: str):
+    update_progress(convert_id, status="processing", percent=5, source=relative_name(source),
+                    filename=relative_name(target), audio_format=audio_format)
+    codec_args = {
+        "mp3": ["-vn", "-codec:a", "libmp3lame", "-b:a", "192k"],
+        "m4a": ["-vn", "-codec:a", "aac", "-b:a", "192k"],
+        "wav": ["-vn", "-codec:a", "pcm_s16le"],
+    }
+    try:
+        command = ["ffmpeg", "-y", "-i", str(source), *codec_args[audio_format], str(target)]
+        result = subprocess.run(command, capture_output=True, text=True, timeout=3600)
+        if result.returncode:
+            raise RuntimeError(result.stderr[-1200:] or "Falha ao converter o arquivo")
+        update_progress(convert_id, status="done", percent=100, filename=relative_name(target),
+                        title=target.stem, source=relative_name(source))
+    except Exception as exc:
+        target.unlink(missing_ok=True)
+        update_progress(convert_id, status="error", error=friendly_error(str(exc)))
 
 
 @app.route("/")
@@ -213,17 +289,41 @@ def start_download():
 
 @app.get("/api/progress/<download_id>")
 def get_progress(download_id):
-    return jsonify(progress_store.get(download_id, {"status": "not_found"}))
+    with progress_lock:
+        return jsonify(progress_store.get(download_id, {"status": "not_found"}))
+
+
+@app.post("/api/convert")
+def convert_media():
+    data = request.get_json(silent=True) or {}
+    audio_format = (data.get("format") or "mp3").lower()
+    if audio_format not in {"mp3", "m4a", "wav"}:
+        return jsonify(error="Formato de áudio inválido"), 400
+    try:
+        source = safe_media_path(data.get("path", ""))
+        if source.suffix.lower() in AUDIO_EXTENSIONS:
+            return jsonify(error="Este arquivo já é um áudio"), 400
+        target = unique_output(source, audio_format)
+    except ValueError as exc:
+        return jsonify(error=str(exc)), 400
+    convert_id = uuid.uuid4().hex[:8]
+    with progress_lock:
+        progress_store[convert_id] = {"status": "starting", "percent": 0, "items_total": 1, "items_completed": 0}
+    threading.Thread(target=do_convert, args=(convert_id, source, target, audio_format), daemon=True).start()
+    return jsonify(convert_id=convert_id, source=relative_name(source), target=relative_name(target))
 
 
 @app.get("/api/list")
 def list_downloads():
     files = []
     for path in DOWNLOAD_DIR.rglob("*"):
-        if path.is_file() and path.suffix.lower() in VIDEO_EXTENSIONS:
+        if path.is_file() and path.suffix.lower() in MEDIA_EXTENSIONS:
             stat = path.stat()
-            files.append({"name": path.name, "path": relative_name(path), "folder": str(path.parent.relative_to(DOWNLOAD_DIR)).replace(os.sep, "/") if path.parent != DOWNLOAD_DIR else "Geral",
-                          "size": stat.st_size, "modified": stat.st_mtime, "stream_url": "/api/stream/" + urllib.parse.quote(relative_name(path), safe="/")})
+            is_audio = path.suffix.lower() in AUDIO_EXTENSIONS
+            files.append({"name": path.name, "path": relative_name(path),
+                          "folder": str(path.parent.relative_to(DOWNLOAD_DIR)).replace(os.sep, "/") if path.parent != DOWNLOAD_DIR else "Geral",
+                          "size": stat.st_size, "modified": stat.st_mtime, "kind": "audio" if is_audio else "video",
+                          "stream_url": "/api/stream/" + urllib.parse.quote(relative_name(path), safe="/")})
     files.sort(key=lambda item: item["modified"], reverse=True)
     return jsonify(files)
 
@@ -287,7 +387,7 @@ def get_info():
     try:
         with yt_dlp.YoutubeDL(build_opts("best", DOWNLOAD_DIR, cookies_path, skip_download=True)) as ydl:
             info = ydl.extract_info(url, download=False)
-        return jsonify(title=info.get("title", ""), thumbnail=info.get("thumbnail", ""), duration=info.get("duration_string", ""), uploader=info.get("uploader", ""))
+        return jsonify(title=info.get("title", ""), thumbnail=info.get("thumbnail", ""), duration=info.get("duration_string", ""), uploader=info.get("uploader", ""), entries=len(info.get("entries") or []) if info.get("_type") == "playlist" else 1)
     except Exception as exc:
         return jsonify(error=friendly_error(str(exc))), 400
     finally:
@@ -297,4 +397,4 @@ def get_info():
 
 if __name__ == "__main__":
     print("\nVideoGet rodando em http://localhost:5000\n")
-    app.run(debug=False, port=5000)
+    app.run(debug=False, host="0.0.0.0", port=5000)
