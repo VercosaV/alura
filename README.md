@@ -90,3 +90,8 @@ A biblioteca agora lista vídeos e áudios, permitindo reproduzir, salvar e move
 ## Observação sobre o GitHub
 
 Esta versão foi preparada localmente para testes. Nenhum commit ou push foi feito no repositório remoto.
+
+
+### Conversão em lote
+
+Na seção **Vídeos e áudios baixados**, use o painel **Converter todos os vídeos**. Escolha MP3, M4A ou WAV e clique em **Criar áudios de todos**. O sistema processa todos os vídeos encontrados em `downloads/`, cria um novo áudio para cada um na mesma pasta e mantém os vídeos originais. A barra mostra o total de itens, o item atual, os concluídos e eventuais falhas.

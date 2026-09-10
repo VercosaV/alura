@@ -265,9 +265,55 @@ def do_convert(convert_id: str, source: Path, target: Path, audio_format: str):
         update_progress(convert_id, status="error", error=friendly_error(str(exc)))
 
 
+def do_convert_batch(convert_id: str, sources: list[Path], audio_format: str):
+    codec_args = {
+        "mp3": ["-vn", "-codec:a", "libmp3lame", "-b:a", "192k"],
+        "m4a": ["-vn", "-codec:a", "aac", "-b:a", "192k"],
+        "wav": ["-vn", "-codec:a", "pcm_s16le"],
+    }
+    total = len(sources)
+    converted, failed = [], []
+    update_progress(convert_id, status="starting", percent=0, items_total=total,
+                    items_completed=0, current_item=0, failed_items=0)
+    for index, source in enumerate(sources, 1):
+        target = unique_output(source, audio_format)
+        update_progress(convert_id, status="processing", percent=int((index - 1) * 100 / total),
+                        current_item=index, current_percent=0, items_total=total,
+                        items_completed=index - 1, source=relative_name(source),
+                        filename=relative_name(target))
+        try:
+            command = ["ffmpeg", "-y", "-i", str(source), *codec_args[audio_format], str(target)]
+            result = subprocess.run(command, capture_output=True, text=True, timeout=3600)
+            if result.returncode:
+                raise RuntimeError(result.stderr[-1200:] or "Falha ao converter o arquivo")
+            converted.append(relative_name(target))
+            update_progress(convert_id, status="processing", percent=int(index * 100 / total),
+                            current_percent=100, items_total=total, items_completed=index,
+                            current_item=index, source=relative_name(source),
+                            filename=relative_name(target), failed_items=len(failed))
+        except Exception as exc:
+            target.unlink(missing_ok=True)
+            failed.append({"source": relative_name(source), "error": friendly_error(str(exc))})
+            update_progress(convert_id, status="processing", percent=int(index * 100 / total),
+                            current_percent=100, items_total=total, items_completed=index,
+                            current_item=index, source=relative_name(source),
+                            failed_items=len(failed))
+    if failed:
+        update_progress(convert_id, status="done_with_errors", percent=100, current_percent=100,
+                        items_total=total, items_completed=total, current_item=total,
+                        converted=converted, failed=failed, failed_items=len(failed))
+    else:
+        update_progress(convert_id, status="done", percent=100, current_percent=100,
+                        items_total=total, items_completed=total, current_item=total,
+                        converted=converted, failed=[], failed_items=0)
+
+
 @app.route("/")
 def index():
-    return send_from_directory(BASE_DIR, "index.html")
+    response = send_from_directory(BASE_DIR, "index.html")
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    return response
 
 
 @app.post("/api/download")
@@ -311,6 +357,33 @@ def convert_media():
         progress_store[convert_id] = {"status": "starting", "percent": 0, "items_total": 1, "items_completed": 0}
     threading.Thread(target=do_convert, args=(convert_id, source, target, audio_format), daemon=True).start()
     return jsonify(convert_id=convert_id, source=relative_name(source), target=relative_name(target))
+
+
+@app.post("/api/convert-all")
+def convert_all_media():
+    data = request.get_json(silent=True) or {}
+    audio_format = (data.get("format") or "mp3").lower()
+    if audio_format not in {"mp3", "m4a", "wav"}:
+        return jsonify(error="Formato de áudio inválido"), 400
+    try:
+        requested = data.get("paths")
+        if requested:
+            sources = [safe_media_path(path) for path in requested]
+        else:
+            sources = sorted((path for path in DOWNLOAD_DIR.rglob("*")
+                              if path.is_file() and path.suffix.lower() in VIDEO_EXTENSIONS),
+                             key=lambda path: relative_name(path).casefold())
+        if not sources:
+            return jsonify(error="Nenhum vídeo disponível para converter"), 400
+    except (TypeError, ValueError) as exc:
+        return jsonify(error=str(exc)), 400
+    convert_id = uuid.uuid4().hex[:8]
+    with progress_lock:
+        progress_store[convert_id] = {"status": "starting", "percent": 0,
+                                       "items_total": len(sources), "items_completed": 0,
+                                       "current_item": 0, "failed_items": 0}
+    threading.Thread(target=do_convert_batch, args=(convert_id, sources, audio_format), daemon=True).start()
+    return jsonify(convert_id=convert_id, items_total=len(sources), audio_format=audio_format)
 
 
 @app.get("/api/list")
